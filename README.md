@@ -32,13 +32,13 @@ We welcome first time contributors and open source enthusiasts. Check out our is
 <a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev"><img src="https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg?v=103"></a>
 <a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/watchers"><img src="https://img.shields.io/github/watchers/LetsGrowMoreCommunity/WebDev-Playyard"></a>
 
-<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/graphs/contributors"><img src="https://img.shields.io/github/contributors/dsc-gtbit/HACKTOBERFEST21-GTBIT-WEBDEV?color=brightgreen"></a>
-<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/stargazers"><img src="https://img.shields.io/github/stars/dsc-gtbit/HACKTOBERFEST21-GTBIT-WEBDEV?color=0059b3"></a>
-<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/network/members"><img src="https://img.shields.io/github/forks/dsc-gtbit/HACKTOBERFEST21-GTBIT-WEBDEV?color=yellow"></a>
-<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/issues"><img src="https://img.shields.io/github/issues/dsc-gtbit/HACKTOBERFEST21-GTBIT-WEBDEV?color=0059b3"></a>
-<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/issues?q=is%3Aissue+is%3Aclosed"><img src="https://img.shields.io/github/issues-closed-raw/dsc-gtbit/HACKTOBERFEST21-GTBIT-WEBDEV?color=yellow"></a>
-<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/pulls"><img src="https://img.shields.io/github/issues-pr/dsc-gtbit/HACKTOBERFEST21-GTBIT-WEBDEV?color=brightgreen"></a>
-<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/pulls?q=is%3Apr+is%3Aclosed"><img src="https://img.shields.io/github/issues-pr-closed-raw/dsc-gtbit/HACKTOBERFEST21-GTBIT-WEBDEV?color=0059b3"></a>
+<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/graphs/contributors"><img src="https://img.shields.io/github/contributors/GDG-GTBIT/Hacktoberfest-2024-Webdev?color=brightgreen"></a>
+<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/stargazers"><img src="https://img.shields.io/github/stars/GDG-GTBIT/Hacktoberfest-2024-Webdev?color=0059b3"></a>
+<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/network/members"><img src="https://img.shields.io/github/forks/GDG-GTBIT/Hacktoberfest-2024-Webdev?color=yellow"></a>
+<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/issues"><img src="https://img.shields.io/github/issues/GDG-GTBIT/Hacktoberfest-2024-Webdev?color=0059b3"></a>
+<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/issues?q=is%3Aissue+is%3Aclosed"><img src="https://img.shields.io/github/issues-closed-raw/GDG-GTBIT/Hacktoberfest-2024-Webdev?color=yellow"></a>
+<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/pulls"><img src="https://img.shields.io/github/issues-pr/GDG-GTBIT/Hacktoberfest-2024-Webdev?color=brightgreen"></a>
+<a href="https://github.com/dsc-gtbit/HacktoberFest-23-AppDev/pulls?q=is%3Apr+is%3Aclosed"><img src="https://img.shields.io/github/issues-pr-closed-raw/GDG-GTBIT/Hacktoberfest-2024-Webdev?color=0059b3"></a>
 
 </div>
 
