@@ -1,0 +1,667 @@
+---
+title: Progress
+description: A fully customizable, accessible and versatile progress bar component for displaying completion or loading status.
+---
+
+## Introduction
+
+The ZyfloProgress component is a versatile and customizable progress bar that can be easily integrated into your Next.js project. It offers a simple way to display completion or loading status with various styling options.
+
+## Add The Component
+
+Add the following component to your project in the `/components/ui` directory:
+
+<ComponentSource>
+```tsx showLineNumbers wrapLines
+"use client"
+import React, { useEffect } from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
+import { motion, useInView } from "framer-motion"
+
+export const PossibleZyfloProgressVariant = [
+  "default",
+  "secondary",
+  "accent",
+  "success",
+  "info",
+  "warning",
+  "danger",
+  "light",
+  "gradient",
+  "outline",
+  "stripes",
+  "glow"
+] as const
+
+export type ZyfloProgressVariant = (typeof PossibleZyfloProgressVariant)[number]
+
+const progressVariants = cva("w-full rounded-full overflow-hidden relative", {
+  variants: {
+    variant: {
+      //update all variants' backgrounds to be gradients
+      default: "bg-gradient-to-r from-secondary to-secondary/80",
+      secondary: "bg-gradient-to-r from-secondary to-secondary/80",
+      accent: "bg-gradient-to-r from-secondary to-secondary/80",
+      success:
+        "bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900 dark:to-emerald-950",
+      info: "bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-950",
+      warning:
+        "bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-950",
+      danger:
+        "bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900 dark:to-red-950",
+      light: "bg-gradient-to-r from-primary/10 to-accent/10",
+      gradient: "bg-gradient-to-r from-primary/20 to-accent/20",
+      outline: "bg-transparent border-2 border-muted",
+      stripes: "bg-gradient-to-r from-secondary to-secondary/80 ",
+      glow: "bg-gradient-to-r from-secondary to-secondary/80 shadow-[0_0_15px_hsl(var(--secondary))] overflow-visible"
+    },
+    size: {
+      sm: "h-2",
+      md: "h-4",
+      lg: "h-6",
+      xl: "h-8"
+    }
+  },
+  defaultVariants: {
+    variant: "default",
+    size: "md"
+  }
+})
+
+const barVariants = cva("h-full rounded-full", {
+  variants: {
+    variant: {
+      default: "bg-primary",
+      secondary: "dark:bg-foreground bg-foreground/5",
+      accent: "bg-gradient-to-r from-accent to-accent/80",
+      success: "bg-emerald-500 dark:bg-emerald-600",
+      info: "bg-blue-500 dark:bg-blue-600",
+      warning: "bg-yellow-300 dark:bg-yellow-500",
+      danger: "bg-red-500 dark:bg-red-600",
+      light: "dark:bg-primary/60 bg-primary/80",
+      gradient: "bg-gradient-to-r from-primary to-accent",
+      outline: "bg-secondary",
+      stripes: "",
+      glow: "bg-primary dark:shadow-[0_0_35px_hsl(var(--primary)/0.5)] shadow-[0_0_35px_hsl(var(--primary)/0.3)] dark:group-hover:shadow-[0_0_35px_hsl(var(--primary)/0.76)] group-hover:shadow-[0_0_35px_hsl(var(--primary)/0.5)]"
+    }
+  },
+  defaultVariants: {
+    variant: "default"
+  }
+})
+
+export interface ZyfloProgressProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof progressVariants> {
+  progress: number
+  showPercentage?: boolean
+  disableAnimations?: boolean
+  stripesColor?: string
+  label?: string
+  srOnly?: string
+  triggerWhenInView?: boolean
+  once?: boolean
+  size?: "sm" | "md" | "lg" | "xl"
+  progressMessage?: string
+  pulse?: boolean // Add this new prop
+}
+
+export const ZyfloProgress: React.FC<ZyfloProgressProps> = ({
+  className,
+  variant = "default",
+  progress,
+  showPercentage = true,
+  disableAnimations = false,
+  stripesColor = "rgba(255, 255, 255, 0.2)",
+  label,
+  srOnly,
+  triggerWhenInView = true,
+  once = true,
+  size = "md",
+  progressMessage,
+  pulse = false,
+  ...props
+}) => {
+  const progressPercentage = Math.min(Math.max(progress, 0), 100)
+  const ref = React.useRef(null)
+  const isInView = useInView(ref, { once })
+
+  useEffect(() => {
+    const style = document.createElement("style")
+    const styleContent = `
+      @keyframes flowingGradient {
+        0% {
+            background-position: 0% 50%;
+        }
+        100% {
+            background-position: 100% 50%;
+        }
+      }
+        @keyframes stripes {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 40px 0;
+            }
+        }
+    `
+    style.textContent = styleContent
+    document.head.appendChild(style)
+
+    return () => {
+      document.head.removeChild(style)
+    }
+  }, [])
+
+  const stripesStyle =
+    variant === "stripes"
+      ? {
+          backgroundImage: `linear-gradient(
+      45deg,
+      ${stripesColor} 25%,
+      transparent 25%,
+      transparent 50%,
+      ${stripesColor} 50%,
+      ${stripesColor} 75%,
+      transparent 75%,
+      transparent 100%
+    )`,
+          backgroundSize: "40px 40px",
+          animation: "stripes 1s linear infinite"
+        }
+      : {}
+
+  return (
+    <div
+      ref={ref}
+      className={cn(progressVariants({ variant, size }), "group", className)}
+      role="progressbar"
+      aria-valuenow={progressPercentage}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={label}
+      {...props}
+    >
+      {showPercentage && (
+        <span
+          className={cn(
+            "absolute inset-0 z-10 flex items-center justify-center text-xs font-semibold",
+            variant === "secondary" && "dark:mix-blend-difference",
+            // (variant === "default" ||
+            //   variant === "gradient" ||
+            //   variant === "glow" ||
+            //   variant === "accent" ||
+            //   variant === "light") &&
+            //   "text-white [text-shadow:_0_0_4px_rgba(0,0,0,0.6)] dark:text-inherit dark:[text-shadow:_0_0_0px_rgba(0,0,0,0)]",
+            variant === "warning" &&
+              "dark:[text-shadow:_0_0_4px_rgba(0,0,0,0.6)]"
+          )}
+        >
+          {progressPercentage}% {progressMessage ? progressMessage : null}
+        </span>
+      )}
+      <motion.div
+        className={cn(barVariants({ variant }), pulse && "animate-pulse")}
+        style={{
+          width: `${progressPercentage}%`,
+          ...stripesStyle
+        }}
+        initial={
+          disableAnimations || !triggerWhenInView
+            ? { width: `${progressPercentage}%` }
+            : { width: 0 }
+        }
+        animate={
+          !triggerWhenInView || (triggerWhenInView && isInView)
+            ? { width: `${progressPercentage}%` }
+            : { width: 0 }
+        }
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+      ></motion.div>
+      {srOnly && <span className="sr-only">{srOnly}</span>}
+    </div>
+  )
+}
+
+export default ZyfloProgress
+```
+</ComponentSource>
+
+## Usage
+
+Here's a basic example of how to use the ZyfloProgress component:
+
+```tsx
+import Progress from "@/components/zyflo/progress"
+
+export default function MyPage() {
+    return (
+        <Progress variant="secondary" progress={33} />
+    )
+}
+```
+
+
+
+## Examples
+
+Here are some examples of how to use the ZyfloProgress component with different variants and options:
+
+### Default
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" progress={69} size="lg" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" progress={69} size="lg" />
+    ```
+  </TabsContent>
+</Tabs>
+
+### Gradient
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" variant="gradient" progress={69} size="lg" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" variant="gradient" progress={69} size="lg" />
+    ```
+  </TabsContent>
+</Tabs>
+
+### Stripes
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" variant="stripes" progress={60} size="lg" stripesColor="rgba(255, 255, 255, 0.3)" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" variant="stripes" progress={60} size="lg" stripesColor="rgba(255, 255, 255, 0.3)" />
+    ```
+  </TabsContent>
+</Tabs>
+
+### Glow
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" variant="glow" progress={69} size="lg" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" variant="glow" progress={69} size="lg" />
+    ```
+  </TabsContent>
+</Tabs>
+
+### Outline
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" variant="outline" progress={69} size="lg" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" variant="outline" progress={69} size="lg" />
+    ```
+  </TabsContent>
+</Tabs>
+
+### Secondary
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" variant="secondary" progress={69} size="lg" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" variant="secondary" progress={69} size="lg" />
+    ```
+  </TabsContent>
+</Tabs>
+
+### Accent
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" variant="accent" progress={69} size="lg" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" variant="accent" progress={69} size="lg" />
+    ```
+  </TabsContent>
+</Tabs>
+
+### Light
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" variant="light" progress={69} size="lg" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" variant="light" progress={69} size="lg" />
+    ```
+  </TabsContent>
+</Tabs>
+
+### Success
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" variant="success" progress={69} size="lg" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" variant="success" progress={69} size="lg" />
+    ```
+  </TabsContent>
+</Tabs>
+
+### Info
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" variant="info" progress={69} size="lg" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" variant="info" progress={69} size="lg" />
+    ```
+  </TabsContent>
+</Tabs>
+
+### Warning
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" variant="warning" progress={69} size="lg" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" variant="warning" progress={69} size="lg" />
+    ```
+  </TabsContent>
+</Tabs>
+
+### Danger
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloProgress progressMessage=" completed" variant="danger" progress={69} size="lg" />
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloProgress progressMessage=" completed" variant="danger" progress={69} size="lg" />
+    ```
+  </TabsContent>
+</Tabs>
+
+
+## Props
+
+### Quick Props Overview
+
+<Table>
+  <TableCaption>ZyfloProgress Component Props</TableCaption>
+  <TableHeader>
+    <TableRow className="border-foreground/50 border-b font-bold text-foreground">
+      <TableHead className="md:w-[19%] w-[35%]">Prop</TableHead>
+      <TableHead className="w-[25%] md:block hidden">Type</TableHead>
+      <TableHead className="w-[15%] lg:block hidden">Default</TableHead>
+      <TableHead className="lg:w-[41%] md:w-[56%] w-[65%]">Description</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">progress</TableCell>
+      <TableCell className="w-[25%] md:block hidden">number</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">-</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The progress value (0-100)</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">variant</TableCell>
+      <TableCell className="w-[25%] md:block hidden">ZyfloProgressVariant</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"default"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The visual style of the progress bar</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">size</TableCell>
+      <TableCell className="w-[25%] md:block hidden">"sm" | "md" | "lg" | "xl"</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"md"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The size of the progress bar</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">showPercentage</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">true</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Whether to show the percentage text</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">disableAnimations</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">false</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Whether to disable animations</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">stripesColor</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"rgba(255, 255, 255, 0.2)"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The color of the stripes for the "stripes" variant</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">label</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Accessible label for the progress bar</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">srOnly</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Text for screen readers only</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">triggerWhenInView</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">true</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Whether to trigger animation when in view</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">once</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">true</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Whether to trigger animation only once</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">progressMessage</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Additional message to display with the percentage</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">pulse</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">false</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Whether to apply a pulse animation</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+
+### Detailed Props Overview
+
+#### <code>variant</code>
+- Type: ZyfloProgressVariant
+- Default: "default"
+
+Defines the visual style of the progress bar. Available options are:
+- `default`
+- `secondary`
+- `accent`
+- `success`
+- `info`
+- `warning`
+- `danger`
+- `light`
+- `gradient`
+- `outline`
+- `stripes`
+- `glow`
+
+#### <code>size</code>
+- Type: `sm` | `md` | `lg` | `xl`
+- Default: `md`
+
+Defines the size of the progress bar.
+
+#### <code>progress</code>
+- Type: number
+- Required: Yes
+
+The progress value, ranging from 0 to 100.
+
+#### <code>showPercentage</code>
+- Type: boolean
+- Default: true
+
+If true, displays the percentage text on the progress bar.
+
+#### <code>disableAnimations</code>
+- Type: boolean
+- Default: false
+
+If true, disables all animations on the progress bar.
+
+#### <code>stripesColor</code>
+- Type: string
+- Default: `rgba(255, 255, 255, 0.2)`
+
+Defines the color of the stripes for the "stripes" variant.
+
+#### <code>triggerWhenInView</code>
+- Type: boolean
+- Default: true
+
+If true, the progress animation will trigger when the component enters the viewport.
+
+#### <code>once</code>
+- Type: boolean
+- Default: true
+
+If true, the animation will only trigger once when the component enters the viewport.
+
+#### <code>progressMessage</code>
+- Type: string
+- Default: undefined
+
+Additional message to display alongside the percentage.
+
+#### <code>pulse</code>
+- Type: boolean
+- Default: false
+
+If true, applies a pulse animation to the progress bar.
+
+## Customization
+
+The component uses Tailwind CSS classes for styling. You can customize its appearance by modifying the CSS classes in the component's source code or by passing additional classes through the `className` prop.
+
+## Accessibility
+
+The ZyfloProgress component is designed with accessibility in mind:
+
+- It uses the appropriate ARIA attributes (`role="progressbar"`, `aria-valuenow`, `aria-valuemin`, `aria-valuemax`) for screen readers.
+- The `label` prop allows you to provide an accessible name for the progress bar.
+- The `srOnly` prop can be used to add additional context for screen readers without affecting the visual layout.
+
+## Notes
+
+- The component uses Framer Motion for animations. Ensure you have Framer Motion installed in your project if you plan to use animations.
+- The `triggerWhenInView` and `once` props can be used to control when and how often the progress animation is triggered.
+- The `pulse` prop can be used to add a subtle animation effect, which can be useful for indicating ongoing processes.
+
+## Contributing
+
+If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request on our GitHub repository. We appreciate your contributions and are always open to collaboration.
+
+Thank you for considering contributing to Zyflo!

@@ -1,0 +1,229 @@
+---
+title: Link Embed
+description: An accessible link embed component that automatically scrapes the link and displays a preview with various styles, animations and multiple variants to choose from.
+component: true
+---
+
+## Usage
+
+```tsx
+import ZyfloLinkEmbed from "@/components/zyflo/link-embed"
+
+export default function LinkEmbedExample() {
+  return (
+    <ZyfloLinkEmbed
+      url="https://example.com"
+      variant="card"
+      disableAnimations={false}
+      backdropBlur={true}
+      triggerWhenInView={true}
+    />
+  )
+}
+```
+
+## Examples
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <div className="flex flex-col gap-4">
+        <ZyfloLinkEmbed url="https://www.harjot.pro" variant="card" />
+        <ZyfloLinkEmbed url="https://www.zyflo.co" variant="light" />
+      </div>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx showLineNumbers
+    <div className="flex flex-col gap-4">
+        <ZyfloLinkEmbed url="https://www.harjot.pro" variant="card" />
+        <ZyfloLinkEmbed url="https://www.zyflo.co" variant="light" />
+    </div>
+    ```
+  </TabsContent>
+</Tabs>
+
+## Props
+
+### Quick Props Overview
+
+<Table>
+  <TableCaption>ZyfloLinkEmbed Component Props</TableCaption>
+  <TableHeader>
+    <TableRow className="border-foreground/50 border-b font-bold text-foreground">
+      <TableHead className="md:w-[19%] w-[35%]">Prop</TableHead>
+      <TableHead className="w-[25%] md:block hidden">Type</TableHead>
+      <TableHead className="w-[15%] lg:block hidden">Default</TableHead>
+      <TableHead className="lg:w-[41%] md:w-[56%] w-[65%]">Description</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">url</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">-</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The URL to embed</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">variant</TableCell>
+      <TableCell className="w-[25%] md:block hidden">ZyfloLinkEmbedVariant</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"card"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The visual style of the link embed</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">disableAnimations</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">false</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Disables all animations if set to true</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">backdropBlur</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">true</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Applies a backdrop blur effect if true</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">triggerWhenInView</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">true</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Triggers animations when the component is in view</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">srOnly</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Text for screen readers only</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">label</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Accessible label for the link embed</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+
+### Detailed Props Overview
+
+#### <code>url</code>
+- Type: `string`
+- Required: Yes
+
+The URL of the website to embed.
+
+#### <code>variant</code>
+- Type: `ZyfloLinkEmbedVariant`
+- Default: `"card"`
+- Possible values: `"card"`, `"light"`, `"info"`, `"warning"`, `"danger"`, `"success"`, `"default"`, `"outline"`, `"secondary"`, `"transparent"`, `"gradient"`
+
+Defines the visual style of the link embed.
+
+#### <code>disableAnimations</code>
+- Type: `boolean`
+- Default: `false`
+
+If set to true, disables all animations in the link embed.
+
+#### <code>backdropBlur</code>
+- Type: `boolean`
+- Default: `true`
+
+If set to true, applies a backdrop blur effect to the link embed.
+
+#### <code>triggerWhenInView</code>
+- Type: `boolean`
+- Default: `true`
+
+If set to true, triggers animations when the component comes into view.
+
+#### <code>srOnly</code>
+- Type: `string`
+- Optional
+
+Adds a span with the sr-only class containing the provided text. This text will be invisible on screen but readable by screen readers.
+
+#### <code>label</code>
+- Type: `string`
+- Optional
+
+Adds an aria-label attribute to the link embed element. This provides an accessible name for the link embed, which can be useful for screen readers.
+
+## Variants
+
+The `ZyfloLinkEmbed` component supports the following variants:
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <div className="grid gap-4 md:grid-cols-1 grid-cols-1">
+        {[
+            "card",
+            "light",
+            "info",
+            "warning",
+            "danger",
+            "success",
+            "default",
+            "outline",
+            "secondary",
+            "transparent",
+            "gradient"
+            ].map((variant) => (
+          <div key={variant} className="w-full flex flex-col gap-2">
+                <h4>{variant.charAt(0).toUpperCase() + variant.slice(1)}</h4>
+              <ZyfloLinkEmbed
+                key={variant}
+                url="https://harjot.pro"
+                variant={variant}
+                className="w-full"
+              />
+          </div>
+        ))}
+      </div>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    {ZyfloLinkEmbedVariants.map((variant) => (
+      <ZyfloLinkEmbed
+        key={variant}
+        url="https://example.com"
+        variant={variant}
+      />
+    ))}
+    ```
+  </TabsContent>
+</Tabs>
+
+## Customization
+
+The component uses Tailwind CSS classes for styling. You can customize its appearance by modifying the CSS classes in the component's source code or by passing additional classes through the className prop.
+
+## Accessibility
+
+The component is designed with accessibility in mind:
+
+- It uses semantic HTML elements for proper structure.
+- The `srOnly` prop allows you to provide additional context for screen readers without affecting the visual appearance.
+- The `label` prop provides a way to add an accessible name to the link embed, enhancing its description for screen readers.
+- The component supports keyboard focus and includes appropriate focus styles.
+
+## Notes
+
+- The component uses Framer Motion for animations. Make sure you have Framer Motion installed in your project if you plan to use animations.
+- The gradient variant automatically adjusts its text color based on the primary color to ensure proper contrast.
+- The component fetches metadata from the provided URL to display the link preview. Ensure that the URLs you're embedding allow cross-origin requests or use a proxy server to avoid CORS issues.
+
+## Contributing
+
+If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request on our GitHub repository. We appreciate your contributions and are always open to collaboration.
+
+Thank you for considering contributing to Zyflo!

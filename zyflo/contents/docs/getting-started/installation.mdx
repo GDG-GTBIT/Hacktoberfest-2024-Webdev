@@ -1,0 +1,234 @@
+---
+title: Installation
+description: Install Zyflo in your Next.js project.
+---
+
+## Prerequisites
+
+Before you begin, ensure that your project meets the following prerequisites:
+
+1. <a href="https://nextjs.org/docs/getting-started" target="_blank">Next.js</a> version 13 or higher
+2. <a href="https://tailwindcss.com/" target="_blank">Tailwind CSS</a> version 3 or higher
+3. <a href="https://ui.shadcn.com/" target="_blank">ShadcnUI</a> initialized/configured in the project
+
+
+Please follow these links for more info and detailed installation instructions for each of these prerequisites. You can continue with the installation process once you have completed the prerequisites.
+
+
+## Create Config File 
+
+To get started with Zyflo, follow these steps:
+1. Create a file called <code>zyflo.config.ts</code> in your project's root directory.
+2. Copy and paste the following code into the <code>zyflo.config.ts</code> file: 
+
+<ComponentSource>
+```tsx showLineNumbers wrap
+/ * Zyflo Config File */
+
+// Zyflo Variant
+interface ZyfloVariant {
+    [key: string]: any;
+}
+
+// Zyflo Variants
+interface ZyfloVariants {
+    name: string;
+    initial: ZyfloVariant;
+    animate: (index: number) => ZyfloVariant;
+}
+
+/* 
+ * Blur Variants
+*/
+
+// * Blur In From Right
+export const zyfloBlurInFromRightVariants: ZyfloVariants = {
+    name: "zyfloBlurInFromRight",
+    initial: {
+        opacity: 0,
+        x: 50,
+        filter: "blur(3px)"
+    },
+    animate: (index) => ({
+        opacity: 1,
+        x: 0,
+        filter: "blur(0px)",
+        transition: {
+            ease: "circInOut",
+            delay: 0.15 * index
+        }
+    })
+};
+
+// * Blur In From Left
+export const zyfloBlurInFromLeftVariants: ZyfloVariants = {
+    name: "zyfloBlurInFromLeft",
+    initial: {
+        opacity: 0,
+        x: -50,
+        filter: "blur(3px)"
+    },
+    animate: (index) => ({
+        opacity: 1,
+        x: 0,
+        filter: "blur(0px)",
+        transition: {
+            ease: "circInOut",
+            delay: 0.15 * index
+        }
+    })
+};
+
+// * Blur In From Top
+export const zyfloBlurInFromTopVariants: ZyfloVariants = {
+    name: "zyfloBlurInFromTop",
+    initial: {
+        opacity: 0,
+        y: 50,
+        filter: "blur(3px)"
+    },
+    animate: (index) => ({
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        transition: {
+            ease: "circInOut",
+            delay: 0.15 * index
+        }
+    })
+};
+
+// * Blur In From Bottom
+export const zyfloBlurInFromBottomVariants: ZyfloVariants = {
+    name: "zyfloBlurInFromBottom",
+    initial: {
+        opacity: 0,
+        y: -50,
+        filter: "blur(3px)"
+    },
+    animate: (index) => ({
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        transition: {
+            ease: "circInOut",
+            delay: 0.15 * index
+        }
+    })
+};
+
+```
+</ComponentSource>
+
+## Adding Zyflo CSS Classes
+
+Zyflo provides a set of pre-defined CSS classes that our components use and you can use to style your components.
+
+To add these classes, please add the following CSS code to your project's <code>globals.css</code> file:
+
+```css showLineNumbers wrap
+.ease-in-out-sine {
+    transition-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+
+.zyflo-transition {
+   transition-timing-function: cubic-bezier(0.12, 0, 0.39, 0);
+   transition-duration: 200ms;
+   transition-property: all
+  }
+  ```
+
+## Adding Utility Functions
+
+Zyflo provides a set of utility functions which help in creating a consistent UI design.
+
+To add these functions, please add the following code to your project's <code>utils.ts</code> file, which is located in the <code>lib</code> directory:
+
+<ComponentSource>
+```tsx showLineNumbers wrap
+export function getCSSVariable(variableName: string): string {
+  if (typeof window !== 'undefined') {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(variableName)
+      .trim();
+  }
+  return '';
+}
+
+
+export function areColorsCompatible(
+  bgH: number,
+  bgS: number,
+  bgL: number,
+  fgH: number,
+  fgS: number,
+  fgL: number
+): boolean {
+  function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+    s /= 100;
+    l /= 100;
+    let r: number, g: number, b: number;
+
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const hue2rgb = (p: number, q: number, t: number): number => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, (h / 360 + 1 / 3) % 1);
+      g = hue2rgb(p, q, h / 360);
+      b = hue2rgb(p, q, (h / 360 - 1 / 3 + 1) % 1);
+    }
+
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  }
+
+  function getLuminance(r: number, g: number, b: number): number {
+    const a = [r, g, b].map(v => {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+  }
+
+  const bgRGB = hslToRgb(bgH, bgS, bgL);
+  const fgRGB = hslToRgb(fgH, fgS, fgL);
+
+  const bgLuminance = getLuminance(...bgRGB);
+  const fgLuminance = getLuminance(...fgRGB);
+
+  const contrastRatio = (Math.max(bgLuminance, fgLuminance) + 0.05) /
+    (Math.min(bgLuminance, fgLuminance) + 0.05);
+
+  return contrastRatio >= 4.5;
+}
+
+export function getAutoContrastClassName(comaptibleWithBlack: boolean, comaptibleWithWhite: boolean): string {
+  const defaultClassName = "";
+  if (!comaptibleWithBlack && !comaptibleWithWhite) {
+    return defaultClassName
+  }
+  if (comaptibleWithBlack) {
+    return "text-gray-950"
+  }
+  if (comaptibleWithWhite) {
+    return "text-gray-50"
+  }
+  if (comaptibleWithBlack && comaptibleWithWhite) {
+    return "text-gray-50"
+  }
+  return defaultClassName
+}
+```
+</ComponentSource>
+
+## Start Adding Zyflo Components
+Once you have added the config file, you can start adding Zyflo components to your project. Zyflo provides a set of components that you can use to build your UI. You can find the list of available components in the [Components](/docs/components) section of the documentation.

@@ -1,0 +1,509 @@
+---
+title: Badge
+description: A customizable badge component with various styles, sizes, and optional animations.
+---
+
+## Introduction
+
+The ZyfloBadge component is a versatile and customizable badge that can be easily integrated into your Next.js project. It offers a range of styling options, icon support, and optional animations.
+
+## Add The Component
+
+Add the following component to your project in the /components/zyflo directory:
+
+<ComponentSource>
+```tsx showLineNumbers wrap
+"use client"
+
+import React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
+import { motion, Variants } from "framer-motion"
+import {
+  zyfloFadeInFromBottomVariants,
+  zyfloFadeInFromTopVariants
+} from "@/zyflo.config"
+import { z } from "zod"
+import {
+  getAutoContrastClassName,
+  getCSSVariable,
+  areColorsCompatible
+} from "@/lib/utils"
+
+export const PossibleZyfloBadgeVariant = [
+  "default",
+  "secondary",
+  "destructive",
+  "outline",
+  "success",
+  "warning",
+  "info",
+  "light",
+  "gradient"
+] as const
+
+export type ZyfloBadgeVariant = (typeof PossibleZyfloBadgeVariant)[number]
+
+export const PossibleZyfloBadgeSize = ["sm", "md", "lg"] as const
+export type ZyfloBadgeSize = (typeof PossibleZyfloBadgeSize)[number]
+
+export const badgeVariants = cva(
+  "inline-flex items-center rounded-full zyflo-transition focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-primary/30 bg-primary/30 hover:border-primary/80 dark:border-primary/40 dark:bg-primary/30 dark:hover:border-primary/70 text-gray-950 dark:text-gray-50",
+        secondary:
+          "bg-secondary hover:bg-secondary/90 dark:bg-secondary dark:hover:bg-secondary/90 border-muted-foreground/20 hover:border-muted-foreground/40 text-gray-950 dark:text-gray-50",
+        destructive:
+          "border-red-300 bg-red-200 hover:border-red-400 dark:border-red-800 dark:bg-red-950 dark:hover:border-red-700 text-red-950 dark:text-red-50",
+        outline:
+          "border-gray-300 bg-transparent hover:bg-background/10 dark:border-gray-800 hover:border-gray-400 dark:hover:border-gray-700 text-gray-950 dark:text-gray-50",
+        success:
+          "border-emerald-300 bg-emerald-200 hover:border-emerald-400 dark:border-emerald-800 dark:bg-emerald-950 dark:hover:border-emerald-700 text-emerald-950 dark:text-emerald-50",
+        warning:
+          "border-yellow-400 bg-yellow-200 hover:border-yellow-500 dark:border-yellow-800 dark:bg-yellow-950 dark:hover:border-yellow-700 text-yellow-950 dark:text-yellow-50",
+        info: "border-blue-300 bg-blue-200 hover:border-blue-400 dark:border-blue-800 dark:bg-blue-950 dark:hover:border-blue-700 text-blue-950 dark:text-blue-50",
+        light:
+          "border-primary/20 bg-primary/10 hover:border-primary/40 dark:border-primary/30 dark:bg-primary/20 dark:hover:border-primary/50 text-primary-700 dark:text-primary-400",
+        gradient:
+          "bg-gradient-to-r bg-[size:300%_300%] hover:bg-[position:0%_0%] bg-[position:100%_100%] from-primary to-primary via-accent border-primary/10 hover:border-primary/30"
+      },
+      size: {
+        sm: "px-3 py-1 text-xs",
+        md: "px-4 py-1.5 text-sm",
+        lg: "px-6 py-2 text-base"
+      }
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "md"
+    }
+  }
+)
+
+export interface ZyfloBadgeProps
+  extends React.HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof badgeVariants> {
+  icon?: React.ReactNode
+  iconPlacement?: "left" | "right"
+  disableAnimations?: boolean
+  variant?: ZyfloBadgeVariant
+  size?: ZyfloBadgeSize
+}
+
+export const ZyfloBadge = React.forwardRef<HTMLSpanElement, ZyfloBadgeProps>(
+  ({
+    className,
+    variant,
+    size,
+    icon,
+    iconPlacement = "left",
+    disableAnimations = false,
+    children,
+    ...props
+  }) => {
+    const IconWrapper = disableAnimations ? React.Fragment : motion.span
+    const iconAnimationProps = disableAnimations
+      ? {}
+      : {
+          initial: { opacity: 0, scale: 0 },
+          animate: { opacity: 1, scale: 1 },
+          transition: { duration: 0.3, delay: 0.3 }
+        }
+
+    const primaryHSL: number[] = getCSSVariable("--primary")
+      .replace("%", "")
+      .slice(0, -1)
+      .split(" ")
+      .map(Number)
+
+    const primaryAndBlackAreCompatible = areColorsCompatible(
+      primaryHSL[0],
+      primaryHSL[1],
+      primaryHSL[2],
+      0,
+      0,
+      0
+    )
+
+    const primaryAndWhiteAreCompatible = areColorsCompatible(
+      primaryHSL[0],
+      primaryHSL[1],
+      primaryHSL[2],
+      100,
+      100,
+      100
+    )
+
+    const gradientVariantClassName = getAutoContrastClassName(
+      primaryAndBlackAreCompatible,
+      primaryAndWhiteAreCompatible
+    )
+
+    const contentRef = React.useRef<HTMLSpanElement>(null)
+
+    React.useEffect(() => {
+      if (variant === "gradient" && contentRef.current) {
+        console.log(gradientVariantClassName)
+        contentRef.current.style.color = gradientVariantClassName
+      }
+      return () => {
+        if (contentRef.current) {
+          contentRef.current.style.color = ""
+        }
+      }
+    }, [variant, gradientVariantClassName])
+
+    const content = (
+      <span
+        ref={contentRef}
+        className={cn(badgeVariants({ variant, size }), className)}
+        {...props}
+      >
+        {icon && iconPlacement === "left" && (
+          <IconWrapper {...iconAnimationProps} className="mr-2">
+            {icon}
+          </IconWrapper>
+        )}
+        <motion.span
+          variants={zyfloFadeInFromTopVariants as unknown as Variants}
+          initial="initial"
+          animate="animate"
+          viewport={{ once: true }}
+          custom={1}
+        >
+          {children}
+        </motion.span>
+        {icon && iconPlacement === "right" && (
+          <IconWrapper {...iconAnimationProps} className="ml-2">
+            {icon}
+          </IconWrapper>
+        )}
+      </span>
+    )
+
+    if (disableAnimations) {
+      return content
+    }
+
+    return (
+      <motion.div
+        variants={zyfloFadeInFromBottomVariants as unknown as Variants}
+        initial="initial"
+        animate="animate"
+        viewport={{ once: true }}
+        transition={{ duration: 0.3, delay: 0 }}
+        className="overflow-hidden"
+      >
+        {content}
+      </motion.div>
+    )
+  }
+)
+
+ZyfloBadge.displayName = "ZyfloBadge"
+
+```
+</ComponentSource>
+
+## Usage
+
+Here's a basic example of how to use the Badge component:
+```tsx
+import { ZyfloBadge } from "@/components/zyflo/badge"
+export default function MyPage() {
+    return (
+    <ZyfloBadge variant="default" size="md">
+        Badge Example Text
+    </ZyfloBadge>
+    )
+}
+```
+
+
+## Examples
+
+Here's a comprehensive example showcasing all variants and sizes of the ZyfloBadge component:
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <h3 className="text-lg font-semibold mb-2 !mt-0">Small Size</h3>
+      <div className="flex flex-wrap gap-2 mb-4">
+        <ZyfloBadge variant="default" size="sm">Default</ZyfloBadge>
+        <ZyfloBadge variant="secondary" size="sm">Secondary</ZyfloBadge>
+        <ZyfloBadge variant="destructive" size="sm">Destructive</ZyfloBadge>
+        <ZyfloBadge variant="outline" size="sm">Outline</ZyfloBadge>
+        <ZyfloBadge variant="success" size="sm">Success</ZyfloBadge>
+        <ZyfloBadge variant="warning" size="sm">Warning</ZyfloBadge>
+        <ZyfloBadge variant="info" size="sm">Info</ZyfloBadge>
+        <ZyfloBadge variant="light" size="sm">Light</ZyfloBadge>
+        <ZyfloBadge variant="gradient" size="sm">Gradient</ZyfloBadge>
+      </div>
+
+      <h3 className="text-lg font-semibold mb-2">Medium Size</h3>
+      <div className="flex flex-wrap gap-2 mb-4">
+        <ZyfloBadge variant="default" size="md">Default</ZyfloBadge>
+        <ZyfloBadge variant="secondary" size="md">Secondary</ZyfloBadge>
+        <ZyfloBadge variant="destructive" size="md">Destructive</ZyfloBadge>
+        <ZyfloBadge variant="outline" size="md">Outline</ZyfloBadge>
+        <ZyfloBadge variant="success" size="md">Success</ZyfloBadge>
+        <ZyfloBadge variant="warning" size="md">Warning</ZyfloBadge>
+        <ZyfloBadge variant="info" size="md">Info</ZyfloBadge>
+        <ZyfloBadge variant="light" size="md">Light</ZyfloBadge>
+        <ZyfloBadge variant="gradient" size="md">Gradient</ZyfloBadge>
+      </div>
+
+      <h3 className="text-lg font-semibold mb-2">Large Size</h3>
+      <div className="flex flex-wrap gap-2 mb-4">
+        <ZyfloBadge variant="default" size="lg">Default</ZyfloBadge>
+        <ZyfloBadge variant="secondary" size="lg">Secondary</ZyfloBadge>
+        <ZyfloBadge variant="destructive" size="lg">Destructive</ZyfloBadge>
+        <ZyfloBadge variant="outline" size="lg">Outline</ZyfloBadge>
+        <ZyfloBadge variant="success" size="lg">Success</ZyfloBadge>
+        <ZyfloBadge variant="warning" size="lg">Warning</ZyfloBadge>
+        <ZyfloBadge variant="info" size="lg">Info</ZyfloBadge>
+        <ZyfloBadge variant="light" size="lg">Light</ZyfloBadge>
+        <ZyfloBadge variant="gradient" size="lg">Gradient</ZyfloBadge>
+      </div>
+
+      <h3 className="text-lg font-semibold mb-2">With Icons</h3>
+      <div className="flex flex-wrap gap-2">
+        <ZyfloBadge variant="default" size="md" icon={<Icons.info className="size-4" />}>
+            <span>Default</span>
+        </ZyfloBadge>
+            <ZyfloBadge variant="secondary" size="md" icon={<Icons.info className="size-4" />}>
+            <span>Secondary</span>
+        </ZyfloBadge>
+        <ZyfloBadge variant="destructive" size="md" icon={<Icons.alertTriangle className="size-4" />}>
+            <span>Destructive</span>
+        </ZyfloBadge>
+        <ZyfloBadge variant="outline" size="md" icon={<Icons.info className="size-4" />}>
+            <span>Outline</span>
+        </ZyfloBadge>
+        <ZyfloBadge variant="success" size="md" icon={<Icons.check className="size-4" />}>
+            <span>Success</span>
+        </ZyfloBadge>
+        <ZyfloBadge variant="warning" size="md" icon={<Icons.alertTriangle className="size-4" />}>
+            <span>Warning</span>
+        </ZyfloBadge>
+        <ZyfloBadge variant="info" size="md" icon={<Icons.info className="size-4" />}>
+            <span>Info</span>
+        </ZyfloBadge>
+        <ZyfloBadge variant="light" size="md" icon={<Icons.info className="size-4" />}>
+            <span>Light</span>
+        </ZyfloBadge>
+        <ZyfloBadge variant="gradient" size="md" icon={<Icons.info className="size-4" />}>
+            <span>Gradient</span>
+        </ZyfloBadge>
+        </div>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <h3 className="text-lg font-semibold mb-2">Small Size</h3>
+    <div className="flex flex-wrap gap-2 mb-4">
+      <ZyfloBadge variant="default" size="sm">Default</ZyfloBadge>
+      <ZyfloBadge variant="secondary" size="sm">Secondary</ZyfloBadge>
+      <ZyfloBadge variant="destructive" size="sm">Destructive</ZyfloBadge>
+      <ZyfloBadge variant="outline" size="sm">Outline</ZyfloBadge>
+      <ZyfloBadge variant="success" size="sm">Success</ZyfloBadge>
+      <ZyfloBadge variant="warning" size="sm">Warning</ZyfloBadge>
+      <ZyfloBadge variant="info" size="sm">Info</ZyfloBadge>
+      <ZyfloBadge variant="light" size="sm">Light</ZyfloBadge>
+      <ZyfloBadge variant="gradient" size="sm">Gradient</ZyfloBadge>
+    </div>
+
+    <h3 className="text-lg font-semibold mb-2">Medium Size</h3>
+    <div className="flex flex-wrap gap-2 mb-4">
+      <ZyfloBadge variant="default" size="md">Default</ZyfloBadge>
+      <ZyfloBadge variant="secondary" size="md">Secondary</ZyfloBadge>
+      <ZyfloBadge variant="destructive" size="md">Destructive</ZyfloBadge>
+      <ZyfloBadge variant="outline" size="md">Outline</ZyfloBadge>
+      <ZyfloBadge variant="success" size="md">Success</ZyfloBadge>
+      <ZyfloBadge variant="warning" size="md">Warning</ZyfloBadge>
+      <ZyfloBadge variant="info" size="md">Info</ZyfloBadge>
+      <ZyfloBadge variant="light" size="md">Light</ZyfloBadge>
+      <ZyfloBadge variant="gradient" size="md">Gradient</ZyfloBadge>
+    </div>
+
+    <h3 className="text-lg font-semibold mb-2">Large Size</h3>
+    <div className="flex flex-wrap gap-2 mb-4">
+      <ZyfloBadge variant="default" size="lg">Default</ZyfloBadge>
+      <ZyfloBadge variant="secondary" size="lg">Secondary</ZyfloBadge>
+      <ZyfloBadge variant="destructive" size="lg">Destructive</ZyfloBadge>
+      <ZyfloBadge variant="outline" size="lg">Outline</ZyfloBadge>
+      <ZyfloBadge variant="success" size="lg">Success</ZyfloBadge>
+      <ZyfloBadge variant="warning" size="lg">Warning</ZyfloBadge>
+      <ZyfloBadge variant="info" size="lg">Info</ZyfloBadge>
+      <ZyfloBadge variant="light" size="lg">Light</ZyfloBadge>
+      <ZyfloBadge variant="gradient" size="lg">Gradient</ZyfloBadge>
+    </div>
+
+    <h3 className="text-lg font-semibold mb-2">With Icons</h3>
+    <div className="flex flex-wrap gap-2">
+      <ZyfloBadge variant="success" size="md" icon={<Icons.check className="size-4" />}>
+        Success
+      </ZyfloBadge>
+      <ZyfloBadge variant="warning" size="md" icon={<Icons.alertTriangle className="size-4" />}>
+        Warning
+      </ZyfloBadge>
+      <ZyfloBadge variant="info" size="md" icon={<Icons.info className="size-4" />}>
+        Info
+      </ZyfloBadge>
+    </div>
+    ```
+  </TabsContent>
+</Tabs>
+
+This example showcases all variants of the ZyfloBadge component in small, medium, and large sizes, as well as examples with icons. The preview tab displays the badges visually, while the code tab provides the corresponding JSX code for implementation.
+
+## Props
+
+### Quick Props Overview
+
+<Table>
+  <TableCaption>ZyfloBadge Component Props</TableCaption>
+  <TableHeader>
+    <TableRow className="border-foreground/50 border-b font-bold text-foreground">
+      <TableHead className="md:w-[19%] w-[35%]">Prop</TableHead>
+      <TableHead className="w-[25%] md:block hidden">Type</TableHead>
+      <TableHead className="w-[15%] lg:block hidden">Default</TableHead>
+      <TableHead className="lg:w-[41%] md:w-[56%] w-[65%]">Description</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">variant</TableCell>
+      <TableCell className="w-[25%] md:block hidden">ZyfloBadgeVariant</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"default"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Defines the visual style of the badge</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">size</TableCell>
+      <TableCell className="w-[25%] md:block hidden">ZyfloBadgeSize</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"md"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Defines the size of the badge</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">icon</TableCell>
+      <TableCell className="w-[25%] md:block hidden">React.ReactNode</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">An icon to display within the badge</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">iconPlacement</TableCell>
+      <TableCell className="w-[25%] md:block hidden">"left" | "right"</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"left"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Determines the placement of the icon</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">disableAnimations</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">false</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">If true, disables all animations</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">className</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Additional CSS classes</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">srOnly</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Text for screen readers only</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">label</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Accessible name for the badge</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+
+### Detailed Props Overview
+
+The ZyfloBadge component accepts the following props:
+
+#### <code>variant</code>
+- Type: ZyfloBadgeVariant
+- Default: "default"
+- Possible values: "default", "secondary", "destructive", "outline", "success", "warning", "info", "light", "gradient"
+
+Defines the visual style of the badge.
+
+#### <code>size</code>
+- Type: ZyfloBadgeSize
+- Default: "md"
+- Possible values: "sm", "md", "lg"
+
+Defines the size of the badge.
+
+#### <code>icon</code>
+- Type: React.ReactNode
+- Optional
+
+An icon to display within the badge.
+
+#### <code>iconPlacement</code>
+- Type: "left" | "right"
+- Default: "left"
+
+Determines the placement of the icon within the badge.
+
+#### <code>disableAnimations</code>
+- Type: boolean
+- Default: false
+
+If set to true, disables all animations in the badge.
+
+#### <code>className</code>
+- Type: string
+- Optional
+
+Additional CSS classes to be applied to the badge.
+
+#### <code>srOnly</code>
+- Type: string
+- Optional
+
+Adds a span with the sr-only class containing the provided text. This text will be invisible on screen but readable by screen readers.
+
+#### <code>label</code>
+- Type: string
+- Optional
+
+Adds an aria-label attribute to the badge element. This provides an accessible name for the badge, which can be useful for screen readers when the visual text doesn't fully describe the badge's purpose.
+
+## Customization
+
+The component uses Tailwind CSS classes for styling. You can customize its appearance by modifying the CSS classes in the component's source code or by passing additional classes through the className prop.
+
+## Accessibility
+
+The component is designed with accessibility in mind:
+
+- It uses semantic HTML elements (span) for proper structure.
+- The component supports keyboard focus and includes appropriate focus styles.
+- The `srOnly` prop allows you to provide additional context for screen readers without affecting the visual appearance.
+- The `label` prop provides a way to add an accessible name to the badge, enhancing its description for screen readers.
+
+## Notes
+
+- The component uses Framer Motion for animations. Make sure you have Framer Motion installed in your project if you plan to use animations.
+- The gradient variant automatically adjusts its text color based on the primary color to ensure proper contrast.
+
+## Contributing
+
+If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request on our GitHub repository. We appreciate your contributions and are always open to collaboration.
+
+Thank you for considering contributing to Zyflo!

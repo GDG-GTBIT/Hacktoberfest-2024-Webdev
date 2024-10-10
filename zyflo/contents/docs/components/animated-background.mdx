@@ -1,0 +1,937 @@
+---
+title: Animated Background
+description: A fully customizable, accessible and versatile animated background component with multiple gradient styles, optional grain effect and options for custom graidnet styles.
+---
+
+## Introduction
+
+The ZyfloAnimatedBackground component is a versatile and customizable animated background that can be easily integrated into your Next.js project. It offers a range of preset gradient styles, custom gradient options, and an optional grain effect for added texture.
+
+## Add The Component
+
+Add the following component to your project in the `/components/zyflo` directory:
+
+<ComponentSource>
+```tsx showLineNumbers wrapLines
+"use client"
+
+import React, { useEffect, useRef } from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
+import { motion, Variants, HTMLMotionProps } from "framer-motion"
+import Image from "next/image"
+
+export const PossibleZyfloAnimatedBackgroundVariant = [
+  "purple-haze",
+  "blue-skies",
+  "pink-dreams",
+  "ocean-breeze",
+  "lavender-mist",
+  "aqua-marine",
+  "emerald-glow",
+  "mint-chocolate",
+  "pastel-paradise",
+  "lime-light",
+  "shadow-dance",
+  "custom"
+] as const
+
+export type ZyfloAnimatedBackgroundVariant =
+  (typeof PossibleZyfloAnimatedBackgroundVariant)[number]
+
+const backgroundVariants = cva("w-full h-full", {
+  variants: {
+    variant: {
+      "purple-haze": "bg-[#8a2be2]",
+      "blue-skies": "bg-[#87ceeb]",
+      "pink-dreams": "bg-[#ff99d3]",
+      "ocean-breeze": "bg-[#99ccff]",
+      "lavender-mist": "bg-[#a899ff]",
+      "aqua-marine": "bg-[#7fffd4]",
+      "emerald-glow": "bg-[#50c878]",
+      "mint-chocolate": "bg-[#3eb489]",
+      "pastel-paradise": "bg-[#ffd1dc]",
+      "lime-light": "bg-[#bfff00]",
+      "shadow-dance": "bg-[#000000]",
+      custom: "bg-transparent"
+    }
+  },
+  defaultVariants: { variant: "purple-haze" }
+})
+
+const gradientConfigs = {
+  "purple-haze": [
+    { x: 80, y: 88, color: "hsla(270,60%,50%,1)" },
+    { x: 28, y: 26, color: "hsla(280,70%,60%,1)" },
+    { x: 88, y: 90, color: "hsla(260,80%,70%,1)" },
+    { x: 44, y: 29, color: "hsla(290,75%,55%,1)" },
+    { x: 14, y: 92, color: "hsla(250,65%,65%,1)" },
+    { x: 19, y: 57, color: "hsla(240,85%,75%,1)" },
+    { x: 31, y: 3, color: "hsla(300,90%,80%,1)" }
+  ],
+  "blue-skies": [
+    { x: 16, y: 5, color: "hsla(200,80%,70%,1)" },
+    { x: 68, y: 79, color: "hsla(220,90%,60%,1)" },
+    { x: 43, y: 7, color: "hsla(180,100%,85%,1)" },
+    { x: 37, y: 94, color: "hsla(240,70%,50%,1)" },
+    { x: 10, y: 88, color: "hsla(190,60%,90%,1)" },
+    { x: 14, y: 86, color: "hsla(210,80%,40%,1)" },
+    { x: 65, y: 71, color: "hsla(170,100%,70%,1)" }
+  ],
+  "pink-dreams": [
+    { x: 2, y: 79, color: "hsla(328,60%,78%,1)" },
+    { x: 38, y: 22, color: "hsla(313,75%,63%,1)" },
+    { x: 78, y: 48, color: "hsla(348,71%,71%,1)" },
+    { x: 89, y: 55, color: "hsla(0,75%,62%,1)" },
+    { x: 60, y: 89, color: "hsla(31,82%,61%,1)" },
+    { x: 30, y: 94, color: "hsla(346,96%,74%,1)" },
+    { x: 81, y: 27, color: "hsla(304,97%,71%,1)" }
+  ],
+  "ocean-breeze": [
+    { x: 8, y: 69, color: "hsla(200,80%,60%,1)" },
+    { x: 0, y: 94, color: "hsla(180,100%,50%,1)" },
+    { x: 1, y: 13, color: "hsla(220,70%,70%,1)" },
+    { x: 94, y: 79, color: "hsla(240,90%,55%,1)" },
+    { x: 20, y: 78, color: "hsla(190,100%,85%,1)" },
+    { x: 24, y: 5, color: "hsla(210,100%,40%,1)" },
+    { x: 4, y: 11, color: "hsla(170,80%,60%,1)" }
+  ],
+  "lavender-mist": [
+    { x: 7, y: 89, color: "hsla(270,71%,64%,1)" },
+    { x: 28, y: 50, color: "hsla(290,71%,71%,1)" },
+    { x: 25, y: 31, color: "hsla(250,78%,77%,1)" },
+    { x: 91, y: 30, color: "hsla(230,64%,62%,1)" },
+    { x: 59, y: 21, color: "hsla(310,72%,64%,1)" },
+    { x: 80, y: 90, color: "hsla(280,93%,77%,1)" },
+    { x: 9, y: 79, color: "hsla(260,60%,60%,1)" }
+  ],
+  "aqua-marine": [
+    { x: 80, y: 37, color: "hsla(180,100%,50%,1)" },
+    { x: 77, y: 99, color: "hsla(200,72%,56%,1)" },
+    { x: 96, y: 21, color: "hsla(220,100%,50%,1)" },
+    { x: 10, y: 14, color: "hsla(160,100%,50%,1)" },
+    { x: 3, y: 5, color: "hsla(190,100%,75%,1)" },
+    { x: 76, y: 72, color: "hsla(170,100%,45%,1)" },
+    { x: 46, y: 32, color: "hsla(210,89%,70%,1)" }
+  ],
+  "emerald-glow": [
+    { x: 81, y: 20, color: "hsla(140,80%,50%,1)" },
+    { x: 29, y: 57, color: "hsla(160,90%,40%,1)" },
+    { x: 16, y: 75, color: "hsla(180,100%,45%,1)" },
+    { x: 91, y: 92, color: "hsla(120,85%,55%,1)" },
+    { x: 3, y: 34, color: "hsla(200,95%,60%,1)" },
+    { x: 3, y: 11, color: "hsla(100,100%,65%,1)" },
+    { x: 94, y: 38, color: "hsla(220,90%,70%,1)" }
+  ],
+  "mint-chocolate": [
+    { x: 78, y: 8, color: "hsla(160,50%,70%,1)" },
+    { x: 2, y: 75, color: "hsla(30,60%,25%,1)" },
+    { x: 35, y: 27, color: "hsla(140,70%,80%,1)" },
+    { x: 11, y: 29, color: "hsla(20,80%,20%,1)" },
+    { x: 54, y: 75, color: "hsla(150,60%,75%,1)" },
+    { x: 16, y: 63, color: "hsla(10,70%,30%,1)" },
+    { x: 88, y: 79, color: "hsla(170,80%,85%,1)" }
+  ],
+  "pastel-paradise": [
+    { x: 54, y: 18, color: "hsla(350,100%,85%,1)" },
+    { x: 13, y: 71, color: "hsla(180,100%,85%,1)" },
+    { x: 58, y: 83, color: "hsla(60,100%,85%,1)" },
+    { x: 53, y: 65, color: "hsla(270,100%,85%,1)" },
+    { x: 9, y: 94, color: "hsla(120,100%,85%,1)" },
+    { x: 20, y: 23, color: "hsla(30,100%,85%,1)" },
+    { x: 30, y: 80, color: "hsla(210,100%,85%,1)" }
+  ],
+  "lime-light": [
+    { x: 80, y: 88, color: "hsla(82,100%,60%,1)" },
+    { x: 28, y: 26, color: "hsla(100,100%,60%,1)" },
+    { x: 88, y: 90, color: "hsla(90,100%,70%,1)" },
+    { x: 44, y: 29, color: "hsla(95,100%,65%,1)" },
+    { x: 14, y: 92, color: "hsla(98,100%,75%,1)" },
+    { x: 19, y: 57, color: "hsla(80,100%,85%,1)" },
+    { x: 31, y: 3, color: "hsla(78,100%,90%,1)" }
+  ],
+  "shadow-dance": [
+    { x: 0, y: 0, color: "hsla(0,0%,0%,1)" },
+    { x: 100, y: 100, color: "hsla(0,0%,100%,1)" },
+    { x: 50, y: 50, color: "hsla(0,0%,50%,1)" },
+    { x: 25, y: 25, color: "hsla(0,0%,25%,1)" },
+    { x: 75, y: 75, color: "hsla(0,0%,75%,1)" },
+    { x: 33, y: 33, color: "hsla(0,0%,33%,1)" },
+    { x: 66, y: 66, color: "hsla(0,0%,66%,1)" },
+    { x: 10, y: 10, color: "hsla(0,0%,10%,1)" }
+  ]
+}
+
+export interface ZyfloAnimatedBackgroundProps
+  extends HTMLMotionProps<"div">,
+    VariantProps<typeof backgroundVariants> {
+  disableAnimations?: boolean
+  triggerWhenInView?: boolean
+  srOnly?: string
+  label?: string
+  customGradients?: Array<{ x: number; y: number; color: string }>
+  grain?: boolean
+  grainClassName?: string
+  children?: React.ReactNode
+}
+
+const ZyfloAnimatedBackground: React.FC<ZyfloAnimatedBackgroundProps> = ({
+  className,
+  variant = "purple-haze",
+  disableAnimations = false,
+  triggerWhenInView = true,
+  srOnly,
+  label,
+  customGradients,
+  grain = false,
+  grainClassName,
+  children,
+  ...props
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const gradients =
+      variant === "custom" && customGradients
+        ? customGradients
+        : gradientConfigs[variant as keyof typeof gradientConfigs]
+
+    if (!gradients) return
+
+    const createGradientLayer = () => {
+      return gradients
+        .map(
+          (g) =>
+            `radial-gradient(at ${g.x}% ${g.y}%, ${g.color} 0px, transparent 50%)`
+        )
+        .join(",")
+    }
+
+    const layer1 = createGradientLayer()
+    const layer2 = createGradientLayer()
+
+    container.style.backgroundImage = `${layer1}, ${layer2}`
+    container.style.backgroundSize = "400% 400%, 400% 400%"
+
+    if (!disableAnimations) {
+      container.style.animation = "gradientAnimation 10s ease infinite"
+    } else {
+      container.style.backgroundPosition = "0% 0%, 100% 100%"
+    }
+
+    if (!disableAnimations) {
+      const style = document.createElement("style")
+      style.textContent = `
+        @keyframes gradientAnimation {
+          0%, 100% { background-position: 0% 0%, 100% 100%; }
+          25% { background-position: 100% 0%, 0% 100%; }
+          50% { background-position: 100% 100%, 0% 0%; }
+          75% { background-position: 0% 100%, 100% 0%; }
+        }
+      `
+      document.head.appendChild(style)
+
+      return () => {
+        document.head.removeChild(style)
+      }
+    }
+  }, [variant, disableAnimations, customGradients])
+
+  const containerVariants: Variants = {
+    initial: { opacity: 0 },
+    animate: {
+      opacity: 1,
+      transition: { duration: 0.6, ease: "easeInOut" }
+    }
+  }
+
+  const content = (
+    <>
+      {grain && (
+        <Image
+          src="/grain.png"
+          alt="grain"
+          draggable={false}
+          className={cn(
+            "absolute inset-0 left-0 top-0 z-10 size-full scale-150 select-none object-cover opacity-50 mix-blend-soft-light",
+            grainClassName
+          )}
+          width={1200}
+          height={1200}
+        />
+      )}
+      {srOnly && <span className="sr-only">{srOnly}</span>}
+    </>
+  )
+  if (disableAnimations) {
+    return (
+      <div
+        ref={containerRef}
+        className={cn(
+          "relative overflow-hidden",
+          variant === "custom"
+            ? backgroundVariants({
+                variant: variant as ZyfloAnimatedBackgroundVariant,
+                className
+              })
+            : className
+        )}
+        aria-label={label}
+        {...(props as React.HTMLAttributes<HTMLDivElement>)}
+      >
+        {content}
+        {children}
+      </div>
+    )
+  }
+
+  return (
+    <motion.div
+      ref={containerRef}
+      className={cn(
+        "relative overflow-hidden",
+        variant === "custom"
+          ? backgroundVariants({
+              variant: variant as ZyfloAnimatedBackgroundVariant,
+              className
+            })
+          : className
+      )}
+      variants={containerVariants}
+      initial="initial"
+      animate={triggerWhenInView ? undefined : "animate"}
+      whileInView={triggerWhenInView ? "animate" : undefined}
+      viewport={triggerWhenInView ? { once: true } : undefined}
+      aria-label={label}
+      {...props}
+    >
+      {content}
+      {children}
+    </motion.div>
+  )
+}
+
+export default ZyfloAnimatedBackground
+```
+</ComponentSource>
+
+## Usage
+
+Here's a basic example of how to use the ZyfloAnimatedBackground component:
+```tsx
+import ZyfloAnimatedBackground from "@/components/zyflo/animated-background"
+export default function MyPage() {
+    return (
+        <ZyfloAnimatedBackground
+            variant="blue-skies"
+            className="w-full h-screen"
+            grain={true}
+        >
+            {/* Your content goes here */}
+        </ZyfloAnimatedBackground>
+    )
+}
+```
+
+## Examples
+
+Here are some examples of how to use the ZyfloAnimatedBackground component with different variants and customizations:
+
+### Purple Haze (Default)
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Blue Skies
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="blue-skies"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="blue-skies"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Pink Dreams
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="pink-dreams"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="pink-dreams"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Ocean Breeze
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="ocean-breeze"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="ocean-breeze"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Lavender Mist
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="lavender-mist"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="lavender-mist"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Aqua Marine
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="aqua-marine"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="aqua-marine"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Emerald Glow
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="emerald-glow"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="emerald-glow"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Mint Chocolate
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="mint-chocolate"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="mint-chocolate"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Pastel Paradise
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="pastel-paradise"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="pastel-paradise"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Lime Light
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="lime-light"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="lime-light"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Shadow Dance
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="shadow-dance"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="shadow-dance"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Custom Gradient
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="custom"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        customGradients={[
+          { x: 0, y: 0, color: "hsl(var(--primary))" },
+          { x: 50, y: 50, color: "hsl(var(--accent))" },
+          { x: 100, y: 100, color: "hsl(var(--primary))" },
+          { x: 100, y: 0, color: "hsl(var(--accent))" },
+        ]}
+        grain={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="custom"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      customGradients={[
+        { x: 0, y: 0, color: "hsl(var(--primary))" },
+        { x: 50, y: 50, color: "hsl(var(--accent))" },
+        { x: 100, y: 100, color: "hsl(var(--primary))" },
+        { x: 100, y: 0, color: "hsl(var(--accent))" },
+      ]}
+      grain={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Without Grain Effect
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="blue-skies"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="blue-skies"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+### With Disabled Animations
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <ZyfloWindowMockup>
+      <ZyfloAnimatedBackground
+        variant="pink-dreams"
+        className="w-full h-64 flex items-center justify-center rounded-2xl"
+        grain={true}
+        disableAnimations={true}
+      >
+        <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+      </ZyfloAnimatedBackground>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx
+    <ZyfloAnimatedBackground
+      variant="pink-dreams"
+      className="w-full h-64 flex items-center justify-center rounded-2xl"
+      grain={true}
+      disableAnimations={true}
+    >
+      <p className="font-bold text-white mix-blend-overlay">Content goes here</p>
+    </ZyfloAnimatedBackground>
+    ```
+  </TabsContent>
+</Tabs>
+
+## Props
+
+### Quick Props Overview
+
+<Table>
+  <TableCaption>ZyfloAnimatedBackground Component Props</TableCaption>
+  <TableHeader>
+    <TableRow className="border-foreground/50 border-b font-bold text-foreground">
+      <TableHead className="md:w-[19%] w-[35%]">Prop</TableHead>
+      <TableHead className="w-[25%] md:block hidden">Type</TableHead>
+      <TableHead className="w-[15%] lg:block hidden">Default</TableHead>
+      <TableHead className="lg:w-[41%] md:w-[56%] w-[65%]">Description</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">variant</TableCell>
+      <TableCell className="w-[25%] md:block hidden">ZyfloAnimatedBackgroundVariant</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"purple-haze"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Defines the gradient style of the background</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">disableAnimations</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">false</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">If true, disables all animations</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">triggerWhenInView</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">true</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">If true, animations trigger when the component is in view</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">srOnly</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Text for screen readers only</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">label</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Accessible label for the background</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">customGradients</TableCell>
+      <TableCell className="w-[25%] md:block hidden">{'{ x: number; y: number; color: string }[]'}></TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Custom gradient configuration for the "custom" variant</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">grain</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">false</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">If true, adds a grain texture to the background</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">grainClassName</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Additional CSS classes for the grain texture</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">className</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Additional CSS classes for the background container</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+
+### Detailed Props Overview
+
+#### <code>variant</code>
+- Type: `ZyfloAnimatedBackgroundVariant`
+- Default: `"purple-haze"`
+- Possible values: `"purple-haze"`, `"blue-skies"`, `"pink-dreams"`, `"ocean-breeze"`, `"lavender-mist"`, `"aqua-marine"`, `"emerald-glow"`, `"mint-chocolate"`, `"pastel-paradise"`, `"lime-light"`, `"shadow-dance"`, `"custom"`
+
+Defines the gradient style of the background.
+
+#### <code>disableAnimations</code>
+- Type: `boolean`
+- Default: `false`
+
+If set to true, disables all animations in the background.
+
+#### <code>triggerWhenInView</code>
+- Type: `boolean`
+- Default: `true`
+
+If set to true, the animation will be triggered when the background is in the viewport.
+
+#### <code>srOnly</code>
+- Type: `string`
+- Optional
+
+Adds a span with the sr-only class containing the provided text. This text will be invisible on screen but readable by screen readers.
+
+#### <code>label</code>
+- Type: `string`
+- Optional
+
+Adds an aria-label attribute to the background element. This provides an accessible name for the background, which can be useful for screen readers.
+
+#### <code>customGradients</code>
+- Type: `Array<{ x: number; y: number; color: string }>`
+- Optional
+
+Custom gradient configuration for the "custom" variant. Each object in the array defines a gradient point with its position (x, y) and color.
+
+#### <code>grain</code>
+- Type: `boolean`
+- Default: `false`
+
+If set to true, adds a grain texture overlay to the background.
+
+#### <code>grainClassName</code>
+- Type: `string`
+- Optional
+
+Additional CSS classes to be applied to the grain texture overlay.
+
+#### <code>className</code>
+- Type: `string`
+- Optional
+
+Additional CSS classes to be applied to the background container.
+
+## Customization
+
+The component uses Tailwind CSS classes for styling. You can customize its appearance by modifying the CSS classes in the component's source code or by passing additional classes through the className prop.
+
+## Accessibility
+
+The component is designed with accessibility in mind:
+
+- It uses semantic HTML elements for proper structure.
+- The `srOnly` prop allows you to provide additional context for screen readers without affecting the visual appearance.
+- The `label` prop provides a way to add an accessible name to the background, enhancing its description for screen readers.
+
+## Notes
+
+- The component uses Framer Motion for animations. Make sure you have Framer Motion installed in your project if you plan to use animations.
+- The grain effect is achieved using an image overlay. Ensure that the `/grain.png` image is available in your public directory.
+- Custom gradients are only applied when the variant is set to "custom".
+
+## Contributing
+
+If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request on our GitHub repository. We appreciate your contributions and are always open to collaboration.
+
+Thank you for considering contributing to Zyflo!

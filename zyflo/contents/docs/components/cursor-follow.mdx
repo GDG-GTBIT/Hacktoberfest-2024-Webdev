@@ -1,0 +1,533 @@
+---
+title: Cursor Follow
+description: A fully customizable, accessible and versatile cursor follow component with 5 pre-built styles and animations. Easily create cool-looking cursor/mouse following effect on any of your projects.
+---
+
+## Introduction
+
+The ZyfloCursor component is a versatile and customizable cursor that can be easily integrated into your Next.js project. It offers a range of styling options and animations to enhance the user experience.
+
+## Add The Component
+
+Add the following component to your project in the `/components/zyflo` directory:
+
+<ComponentSource>
+```tsx showLineNumbers wrapLines
+"use client"
+
+import React, { useEffect, useRef, useState } from "react"
+import { cn } from "@/lib/utils"
+import { motion, useSpring, useMotionValue } from "framer-motion"
+import { cva, type VariantProps } from "class-variance-authority"
+
+export const PossibleZyfloCursorVariant = [
+  "default",
+  "spot-blur",
+  "dot",
+  "ring",
+  "inverted"
+] as const
+
+export type ZyfloCursorVariant = (typeof PossibleZyfloCursorVariant)[number]
+
+const cursorVariants = cva("absolute", {
+  variants: {
+    variant: {
+      default: "size-8 rounded-full border-2 border-primary",
+      "spot-blur": "size-16 rounded-full bg-primary/30 blur-xl",
+      dot: "size-3 rounded-full bg-primary",
+      ring: "size-8 rounded-full border-2 border-primary",
+      inverted: "size-8 rounded-full bg-foreground mix-blend-difference"
+    }
+  },
+  defaultVariants: { variant: "default" }
+})
+
+interface ZyfloCursorProps extends VariantProps<typeof cursorVariants> {
+  containerRef: React.RefObject<HTMLElement>
+  delay?: number
+  easing?: string
+  srOnly?: string
+  label?: string
+  color?: string
+}
+
+const useHoverState = () => {
+  const [isHovering, setIsHovering] = useState(false)
+
+  const onMouseEnter = (e: MouseEvent) => {
+    const target = e.target as HTMLElement
+    if (
+      target.tagName === "A" ||
+      target.classList.contains("zyflo-hover") ||
+      target.closest("a, .zyflo-hover")
+    ) {
+      setIsHovering(true)
+    }
+  }
+
+  const onMouseLeave = (e: MouseEvent) => {
+    const target = e.target as HTMLElement
+    if (
+      target.tagName === "A" ||
+      target.classList.contains("zyflo-hover") ||
+      target.closest("a, .zyflo-hover")
+    ) {
+      setIsHovering(false)
+    }
+  }
+
+  return { isHovering, onMouseEnter, onMouseLeave }
+}
+
+const ZyfloCursor: React.FC<ZyfloCursorProps> = ({
+  containerRef,
+  variant = "default",
+  delay = 0.1,
+  easing = "spring(100, 10, 0, 0)",
+  srOnly,
+  label,
+  color
+}) => {
+  const cursorRef = useRef<HTMLDivElement>(null)
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+  const { isHovering, onMouseEnter, onMouseLeave } = useHoverState()
+
+  const springConfig = {
+    bounce: 0.5,
+    stiffness: 4000,
+    damping: 500,
+    mass: 10,
+    duration: 0.1
+  }
+
+  const cursorX = useSpring(mouseX, springConfig)
+  const cursorY = useSpring(mouseY, springConfig)
+
+  useEffect(() => {
+    const container = containerRef ? containerRef.current : null
+    if (!container) return
+
+    const updateCursorPosition = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect()
+      mouseX.set(
+        e.clientX -
+          rect.left -
+          (variant === "spot-blur" ? 54 : variant === "dot" ? 37 : 46)
+      )
+      mouseY.set(
+        e.clientY -
+          rect.top -
+          (variant === "spot-blur" ? 138 : variant === "dot" ? 118 : 126)
+      )
+    }
+
+    container.addEventListener("mousemove", updateCursorPosition)
+    container.addEventListener("mouseenter", onMouseEnter, true)
+    container.addEventListener("mouseleave", onMouseLeave, true)
+
+    return () => {
+      container.removeEventListener("mousemove", updateCursorPosition)
+      container.removeEventListener("mouseenter", onMouseEnter, true)
+      container.removeEventListener("mouseleave", onMouseLeave, true)
+    }
+  }, [containerRef, mouseX, mouseY, onMouseEnter, onMouseLeave, variant])
+
+  const renderCursor = () => {
+    const styles = {
+      left: cursorX,
+      top: cursorY,
+      borderColor: color,
+      backgroundColor: variant === "spot-blur" ? `${color}4D` : color // 4D is 30% opacity in hex
+    }
+
+    const hoverStyles = {
+      scale: isHovering ? 1.5 : 1,
+      opacity: isHovering ? 0.4 : 1
+    }
+
+    const commonProps = {
+      className: cursorVariants({ variant }),
+      style: styles,
+      animate: hoverStyles,
+      transition: { delay, ease: easing, ...hoverStyles }
+    }
+
+    switch (variant) {
+      case "spot-blur":
+      case "dot":
+      case "ring":
+      case "inverted":
+        return (
+          <div className="relative">
+            <motion.div {...commonProps} />
+          </div>
+        )
+      default:
+        return (
+          <div className="relative">
+            <motion.div {...commonProps} />
+            <motion.div
+              className={`absolute ml-[12px] mt-[12px] size-2 rounded-full !bg-${
+                color ? `[${color}]` : "primary"
+              }`}
+              style={{
+                ...styles,
+                backgroundColor: color ? color : "hsl(var(--primary))"
+              }}
+              animate={hoverStyles}
+              transition={{ delay, ease: easing, ...hoverStyles }}
+            />
+          </div>
+        )
+    }
+  }
+
+  return (
+    <div
+      ref={cursorRef}
+      aria-label={label}
+      onMouseEnter={
+        onMouseEnter as unknown as React.MouseEventHandler<HTMLDivElement>
+      }
+      onMouseLeave={
+        onMouseLeave as unknown as React.MouseEventHandler<HTMLDivElement>
+      }
+    >
+      {renderCursor()}
+      {srOnly && <span className="sr-only">{srOnly}</span>}
+    </div>
+  )
+}
+
+export default ZyfloCursor
+```
+</ComponentSource>
+
+## Usage
+
+Here's an example of how to use the ZyfloCursor component:
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <SpotBlurCursor />
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx wrap showLineNumbers
+    <ZyfloWindowMockup className="relative">
+      <ZyfloCursor
+        variant="default"
+        label="Default Cursor"
+        srOnly="Default Cursor"
+      />
+      <div className="p-4">
+        <Button variant="secondary" className="zyflo-hover">
+          Hover me
+        </Button>
+      </div>
+    </ZyfloWindowMockup>
+    ```
+  </TabsContent>
+</Tabs>
+
+## Variants
+
+The ZyfloCursor component supports several variants:
+
+### Default
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <DefaultCursor />
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx wrap showLineNumbers
+        <ZyfloWindowMockup className="relative">
+        <ZyfloCursor
+            variant="default"
+            label="Default Cursor"
+            srOnly="Default Cursor"
+        />
+        <div className="p-4">
+            <Button variant="secondary" className="zyflo-hover">
+            Hover me
+            </Button>
+        </div>
+        </ZyfloWindowMockup>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Spot Blur
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <SpotBlurCursor />
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx wrap showLineNumbers
+    <ZyfloWindowMockup className="relative">
+      <ZyfloCursor
+        variant="spot-blur"
+        label="Spot Blur Cursor"
+        srOnly="Spot Blur Cursor"
+      />
+      <div className="p-4">
+        <Button variant="secondary" className="zyflo-hover">
+          Hover me
+        </Button>
+      </div>
+    </ZyfloWindowMockup>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Dot
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <DotCursor />
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx wrap showLineNumbers
+    const dotRef = useRef<HTMLDivElement>(null)
+
+    <ZyfloWindowMockup className="relative">
+      <ZyfloCursor
+        variant="dot"
+        label="Dot Cursor"
+        srOnly="Dot Cursor"
+      />
+      <div className="p-4">
+        <Button variant="secondary" className="zyflo-hover">
+          Hover me
+        </Button>
+      </div>
+    </ZyfloWindowMockup>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Ring
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <RingCursor />
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx wrap showLineNumbers
+    const ringRef = useRef<HTMLDivElement>(null)
+
+    <ZyfloWindowMockup className="relative">
+      <ZyfloCursor
+        variant="ring"
+        label="Ring Cursor"
+        srOnly="Ring Cursor"
+      />
+      <div className="p-4">
+        <Button variant="secondary" className="zyflo-hover">
+          Hover me
+        </Button>
+      </div>
+    </ZyfloWindowMockup>
+    ```
+  </TabsContent>
+</Tabs>
+
+### Inverted
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+    <InvertedCursor />
+  </TabsContent>
+  <TabsContent value="code">
+    ```tsx wrap showLineNumbers
+    const invertedRef = useRef<HTMLDivElement>(null)
+
+    <ZyfloWindowMockup className="relative">
+      <ZyfloCursor
+        variant="inverted"
+        label="Inverted Cursor"
+        srOnly="Inverted Cursor"
+      />
+      <div className="p-4">
+        <Button variant="secondary" className="zyflo-hover">
+          Hover me
+        </Button>
+      </div>
+    </ZyfloWindowMockup>
+    ```
+  </TabsContent>
+</Tabs>
+
+## Props
+
+The ZyfloCursor component accepts the following props:
+
+### Quick Props Overview
+
+<Table>
+  <TableCaption>ZyfloCursor Component Props</TableCaption>
+  <TableHeader>
+    <TableRow className="border-foreground/50 border-b font-bold text-foreground">
+      <TableHead className="md:w-[19%] w-[35%]">Prop</TableHead>
+      <TableHead className="w-[25%] md:block hidden">Type</TableHead>
+      <TableHead className="w-[15%] lg:block hidden">Default</TableHead>
+      <TableHead className="lg:w-[41%] md:w-[56%] w-[65%]">Description</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">containerRef</TableCell>
+      <TableCell className="w-[25%] md:block hidden">{'React.RefObject<HTMLElement>'}</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">-</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Reference to the container element</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">variant</TableCell>
+      <TableCell className="w-[25%] md:block hidden">ZyfloCursorVariant</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"default"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Defines the visual style of the cursor</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">delay</TableCell>
+      <TableCell className="w-[25%] md:block hidden">number</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">0.1</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Delay for cursor animation</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">easing</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"spring(100, 10, 0, 0)"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Easing function for cursor animation</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">srOnly</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Screen reader only text</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">label</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Aria label for the cursor</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">color</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Custom color for the cursor</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+
+### Detailed Props Overview
+
+#### <code>containerRef</code>
+- Type: `React.RefObject<HTMLElement>`
+- Required: Yes
+
+Reference to the container element where the cursor will be active.
+
+#### <code>variant</code>
+- Type: `ZyfloCursorVariant`
+- Default: `"default"`
+
+Defines the visual style of the cursor. Possible values are:
+- `"default"`
+- `"spot-blur"`
+- `"dot"`
+- `"ring"`
+- `"inverted"`
+
+```tsx wrap showLineNumbers
+export const PossibleZyfloCursorVariant = [
+    "default",
+    "spot-blur",
+    "dot",
+    "ring",
+    "inverted"
+] as const
+
+export type ZyfloCursorVariant = (typeof PossibleZyfloCursorVariant)[number]
+```
+
+
+#### <code>delay</code>
+- Type: `number`
+- Default: `0.1`
+
+Delay for cursor animation in seconds.
+
+#### <code>easing</code>
+- Type: `string`
+- Default: `"spring(100, 10, 0, 0)"`
+
+Easing function for cursor animation.
+
+#### <code>srOnly</code>
+- Type: `string`
+- Required: No
+
+Screen reader only text for accessibility.
+
+#### <code>label</code>
+- Type: `string`
+- Required: No
+
+Aria label for the cursor.
+
+#### <code>color</code>
+- Type: `string`
+- Required: No
+
+Custom color for the cursor.
+
+## Customization
+
+The component uses Tailwind CSS classes for styling. You can customize its appearance by modifying the CSS classes in the component's source code or by passing additional classes through the `className` prop.
+
+## Accessibility
+
+The component is designed with accessibility in mind:
+- It uses semantic HTML elements for proper structure.
+- The `srOnly` prop can be used to add screen reader-only text.
+- The `label` prop provides an aria-label for the cursor.
+
+## Notes
+
+- The component uses Framer Motion for animations. Make sure you have Framer Motion installed in your project.
+- The cursor's colors and styles are designed to work with both light and dark modes.
+- The `zyflo-hover` class can be added to elements to trigger the hover effect on the cursor.
+
+## Contributing
+
+If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request on our GitHub repository. We appreciate your contributions and are always open to collaboration.
+
+Thank you for considering contributing to Zyflo!

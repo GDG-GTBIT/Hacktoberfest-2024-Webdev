@@ -1,0 +1,867 @@
+---
+title: Animate On Scroll
+description: A fully customizable and versatile component for adding scroll-triggered animations to different elements on your page.
+---
+
+## Introduction
+
+The ZyfloAOS component is a powerful and flexible tool for adding scroll-triggered animations to elements on your page. It uses Framer Motion to create smooth, customizable animations that activate as the element comes into view.
+
+## Add The Component
+
+Add the following component to your project in the `/components/zyflo` directory:
+
+<ComponentSource>
+```tsx showLineNumbers wrapLines
+"use client"
+
+import React, { ReactNode } from "react"
+import { motion, Variants, HTMLMotionProps } from "framer-motion"
+
+export const PossibleZyfloAOSVariants = [
+  "fade",
+  "slide-left",
+  "slide-right",
+  "slide-top",
+  "slide-bottom",
+  "slide-top-right",
+  "slide-top-left",
+  "slide-bottom-right",
+  "slide-bottom-left",
+  "scale-center",
+  "scale-left",
+  "scale-right",
+  "scale-bottom",
+  "scale-top",
+  "scale-top-right",
+  "scale-top-left",
+  "scale-bottom-right",
+  "scale-bottom-left",
+  "rotate-left",
+  "rotate-right",
+  "rotate-bottom",
+  "rotate-top",
+  "rotate-top-right",
+  "rotate-top-left",
+  "rotate-bottom-right",
+  "rotate-bottom-left",
+  "flip-left",
+  "flip-right",
+  "flip-bottom",
+  "flip-top",
+  "flip-top-right",
+  "flip-top-left",
+  "flip-bottom-right",
+  "flip-bottom-left"
+] as const
+
+export type ZyfloAOSVariant = (typeof PossibleZyfloAOSVariants)[number]
+
+export const PossibleZyfloAOSEasings = [
+  "ease-in",
+  "ease-out",
+  "ease-in-out",
+  "circ-out",
+  "spring"
+] as const
+
+export type ZyfloAOSEasing = (typeof PossibleZyfloAOSEasings)[number]
+
+const createVariants = (
+  variant: ZyfloAOSVariant,
+  duration: number,
+  easing: ZyfloAOSEasing
+): Variants => {
+  const baseVariants: Variants = {
+    hidden: {
+      opacity: 0
+    },
+    visible: {
+      opacity: 1,
+      transition:
+        easing === "spring"
+          ? { type: "spring", bounce: 0.5, duration }
+          : { duration, ease: getEasing(easing) }
+    }
+  }
+
+  const transitionProps =
+    easing === "spring"
+      ? {
+          type: "spring",
+          bounce: 0.5,
+          duration
+        }
+      : {
+          duration,
+          ease: getEasing(easing),
+          opacity: { duration: duration * 0.75 }
+        }
+
+  switch (variant) {
+    case "slide-left":
+      return {
+        ...baseVariants,
+        hidden: { x: "-50%", opacity: 0 },
+        visible: { x: 0, opacity: 1, transition: transitionProps }
+      }
+    case "slide-right":
+      return {
+        ...baseVariants,
+        hidden: { x: "50%", opacity: 0 },
+        visible: { x: 0, opacity: 1, transition: transitionProps }
+      }
+    case "slide-top":
+      return {
+        ...baseVariants,
+        hidden: { y: "-50%", opacity: 0 },
+        visible: { y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "slide-bottom":
+      return {
+        ...baseVariants,
+        hidden: { y: "50%", opacity: 0 },
+        visible: { y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "slide-top-right":
+      return {
+        ...baseVariants,
+        hidden: { x: "50%", y: "-50%", opacity: 0 },
+        visible: { x: 0, y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "slide-top-left":
+      return {
+        ...baseVariants,
+        hidden: { x: "-50%", y: "-50%", opacity: 0 },
+        visible: { x: 0, y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "slide-bottom-right":
+      return {
+        ...baseVariants,
+        hidden: { x: "50%", y: "50%", opacity: 0 },
+        visible: { x: 0, y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "slide-bottom-left":
+      return {
+        ...baseVariants,
+        hidden: { x: "-50%", y: "50%", opacity: 0 },
+        visible: { x: 0, y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "scale-center":
+      return {
+        ...baseVariants,
+        hidden: { scale: 0, opacity: 0 },
+        visible: { scale: 1, opacity: 1, transition: transitionProps }
+      }
+    case "scale-left":
+      return {
+        ...baseVariants,
+        hidden: { scale: 0, x: "-50%", opacity: 0 },
+        visible: { scale: 1, x: 0, opacity: 1, transition: transitionProps }
+      }
+    case "scale-right":
+      return {
+        ...baseVariants,
+        hidden: { scale: 0, x: "50%", opacity: 0 },
+        visible: { scale: 1, x: 0, opacity: 1, transition: transitionProps }
+      }
+    case "scale-bottom":
+      return {
+        ...baseVariants,
+        hidden: { scale: 0, y: "50%", opacity: 0 },
+        visible: { scale: 1, y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "scale-top":
+      return {
+        ...baseVariants,
+        hidden: { scale: 0, y: "-100%", opacity: 0 },
+        visible: { scale: 1, y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "scale-top-right":
+      return {
+        ...baseVariants,
+        hidden: {
+          x: "50%",
+          y: "-50%",
+          scale: 0,
+          opacity: 0
+        },
+        visible: {
+          x: 0,
+          y: 0,
+          scale: 1,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    case "scale-top-left":
+      return {
+        ...baseVariants,
+        hidden: {
+          x: "-50%",
+          y: "-50%",
+          scale: 0,
+          opacity: 0
+        },
+
+        visible: {
+          x: 0,
+          y: 0,
+          scale: 1,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    case "scale-bottom-right":
+      return {
+        ...baseVariants,
+        hidden: { scale: 0, x: "50%", y: "50%", opacity: 0 },
+        visible: {
+          scale: 1,
+          x: 0,
+          y: 0,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    case "scale-bottom-left":
+      return {
+        ...baseVariants,
+        hidden: { scale: 0, x: "-50%", y: "50%", opacity: 0 },
+        visible: {
+          scale: 1,
+          x: 0,
+          y: 0,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    case "fade":
+      return {
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition:
+            easing === "spring"
+              ? { type: "spring", bounce: 0.5, duration }
+              : { duration, ease: getEasing(easing) }
+        }
+      }
+    case "rotate-left":
+      return {
+        ...baseVariants,
+        hidden: { rotate: -45, x: "-25%", opacity: 0 },
+        visible: { rotate: 0, x: 0, opacity: 1, transition: transitionProps }
+      }
+    case "rotate-right":
+      return {
+        ...baseVariants,
+        hidden: { rotate: 45, x: "25%", opacity: 0 },
+        visible: { rotate: 0, x: 0, opacity: 1, transition: transitionProps }
+      }
+    case "rotate-bottom":
+      return {
+        ...baseVariants,
+        hidden: { rotate: 45, y: "25%", opacity: 0 },
+        visible: { rotate: 0, y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "rotate-top":
+      return {
+        ...baseVariants,
+        hidden: { rotate: -45, y: "-25%", opacity: 0 },
+        visible: { rotate: 0, y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "rotate-top-right":
+      return {
+        ...baseVariants,
+        hidden: { rotate: 45, x: "25%", y: "-25%", opacity: 0 },
+        visible: {
+          rotate: 0,
+          x: 0,
+          y: 0,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    case "rotate-top-left":
+      return {
+        ...baseVariants,
+        hidden: { rotate: -45, x: "-25%", y: "-25%", opacity: 0 },
+        visible: {
+          rotate: 0,
+          x: 0,
+          y: 0,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    case "rotate-bottom-right":
+      return {
+        ...baseVariants,
+        hidden: { rotate: 45, x: "25%", y: "25%", opacity: 0 },
+        visible: {
+          rotate: 0,
+          x: 0,
+          y: 0,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    case "rotate-bottom-left":
+      return {
+        ...baseVariants,
+        hidden: { rotate: -45, x: "-25%", y: "25%", opacity: 0 },
+        visible: {
+          rotate: 0,
+          x: 0,
+          y: 0,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    case "flip-left":
+      return {
+        ...baseVariants,
+        hidden: { rotateY: 180, x: "-25%", opacity: 0 },
+        visible: { rotateY: 0, x: 0, opacity: 1, transition: transitionProps }
+      }
+    case "flip-right":
+      return {
+        ...baseVariants,
+        hidden: { rotateY: -180, x: "25%", opacity: 0 },
+        visible: { rotateY: 0, x: 0, opacity: 1, transition: transitionProps }
+      }
+    case "flip-bottom":
+      return {
+        ...baseVariants,
+        hidden: { rotateX: -180, y: "25%", opacity: 0 },
+        visible: { rotateX: 0, y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "flip-top":
+      return {
+        ...baseVariants,
+        hidden: { rotateX: 180, y: "-25%", opacity: 0 },
+        visible: { rotateX: 0, y: 0, opacity: 1, transition: transitionProps }
+      }
+    case "flip-top-right":
+      return {
+        ...baseVariants,
+        hidden: {
+          rotateX: 90,
+          rotateY: -90,
+          x: "25%",
+          y: "-25%",
+          opacity: 0
+        },
+        visible: {
+          rotateX: 0,
+          rotateY: 0,
+          x: 0,
+          y: 0,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    case "flip-top-left":
+      return {
+        ...baseVariants,
+        hidden: {
+          rotateX: 90,
+          rotateY: 90,
+          x: "-25%",
+          y: "-25%",
+          opacity: 0
+        },
+        visible: {
+          rotateX: 0,
+          rotateY: 0,
+          x: 0,
+          y: 0,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    case "flip-bottom-right":
+      return {
+        ...baseVariants,
+        hidden: {
+          rotateX: -90,
+          rotateY: -90,
+          x: "25%",
+          y: "25%",
+          opacity: 0
+        },
+        visible: {
+          rotateX: 0,
+          rotateY: 0,
+          x: 0,
+          y: 0,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    case "flip-bottom-left":
+      return {
+        ...baseVariants,
+        hidden: {
+          rotateX: -90,
+          rotateY: 90,
+          x: "-25%",
+          y: "25%",
+          opacity: 0
+        },
+        visible: {
+          rotateX: 0,
+          rotateY: 0,
+          x: 0,
+          y: 0,
+          opacity: 1,
+          transition: transitionProps
+        }
+      }
+    default:
+      return baseVariants
+  }
+}
+
+export interface ZyfloAOSProps extends HTMLMotionProps<"div"> {
+  children: ReactNode
+  amount?: number
+  once?: boolean
+  variant?: ZyfloAOSVariant
+  duration?: number
+  easing?: ZyfloAOSEasing
+}
+
+const getEasing = (easing: ZyfloAOSEasing) => {
+  switch (easing) {
+    case "ease-in":
+      return "easeIn"
+    case "ease-out":
+      return "easeOut"
+    case "ease-in-out":
+      return "easeInOut"
+    case "spring":
+      return "spring"
+    case "circ-out":
+      return "circOut"
+    default:
+      return easing
+  }
+}
+
+const ZyfloAOS: React.FC<ZyfloAOSProps> = ({
+  children,
+  amount = 0,
+  once = false,
+  className,
+  variant = "fade",
+  duration = 0.5,
+  easing = "ease-in-out",
+  ...props
+}) => {
+  return (
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ amount, once }}
+      variants={createVariants(variant, duration, easing)}
+      transition={
+        easing === "spring"
+          ? { type: "spring", bounce: 0.5, duration }
+          : { duration, ease: getEasing(easing) }
+      }
+      {...props}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+export default ZyfloAOS
+```
+</ComponentSource>
+
+## Usage
+
+Here's a basic example of how to use the AOS component:
+```tsx showLineNumbers wrapLines
+import ZyfloAOS from "@/components/zyflo/aos"
+
+export default function MyPage() {
+    return (
+        <ZyfloAOS
+            once={false}
+            amount={0.4}
+            duration={1.2}
+            easing="spring"
+            variant="slide-left"
+        >
+            <div className="flex size-52 items-center justify-center">
+                <p>Content goes here</p>
+            </div>
+        </ZyfloAOS>
+    )
+}
+```
+
+
+## Examples
+
+Here are all of the examples of how to use the ZyfloAOS component with all the different variants available:
+
+<Tabs defaultValue="preview-spring" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview-spring"><Icons.preview className="size-4"/>Preview (Spring)</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="preview-ease-in-out"><Icons.preview className="size-4"/>Preview (Ease In Out)</TabsTrigger>
+    <TabsTrigger className="px-10 py-2.5 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview-spring">
+    <ZyfloWindowMockup>
+        <div className="relative flex flex-row flex-wrap items-start justify-start gap-8">
+            {[
+                "fade",
+                "slide-left",
+                "slide-right",
+                "slide-top",
+                "slide-bottom",
+                "slide-top-right",
+                "slide-top-left",
+                "slide-bottom-right",
+                "slide-bottom-left",
+                "scale-center",
+                "scale-left",
+                "scale-right",
+                "scale-bottom",
+                "scale-top",
+                "scale-top-right",
+                "scale-top-left",
+                "scale-bottom-right",
+                "scale-bottom-left",
+                "rotate-left",
+                "rotate-right",
+                "rotate-bottom",
+                "rotate-top",
+                "rotate-top-right",
+                "rotate-top-left",
+                "rotate-bottom-right",
+                "rotate-bottom-left",
+                "flip-left",
+                "flip-right",
+                "flip-bottom",
+                "flip-top",
+                "flip-top-right",
+                "flip-top-left",
+                "flip-bottom-right",
+                "flip-bottom-left"
+            ].map((variant) => (
+              <div className="relative flex flex-col items-start justify-start">
+                <p className="my-4 font-bold">
+                  {variant
+                    .split("-")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ")}{" "}
+                  Variant
+                </p>
+                <ZyfloAOS
+                  once={false}
+                  key={variant}
+                  amount={0.4}
+                  duration={1.2}
+                  easing="spring"
+                  variant={variant}
+                >
+                  <div className="flex size-52 items-center justify-center rounded-2xl border-2 border-primary/20 bg-secondary/50 shadow-[0_0_20px_0] shadow-primary/5 zyflo-transition hover:border-primary/40 hover:shadow-[0_0_40px_0] hover:shadow-primary/20">
+                    <p className="font-bold">Content goes here</p>
+                  </div>
+                </ZyfloAOS>
+              </div>
+            ))}
+          </div>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="preview-ease-in-out">
+    <ZyfloWindowMockup>
+        <div className="relative flex flex-row flex-wrap items-start justify-start gap-8">
+            {[
+                "fade",
+                "slide-left",
+                "slide-right",
+                "slide-top",
+                "slide-bottom",
+                "slide-top-right",
+                "slide-top-left",
+                "slide-bottom-right",
+                "slide-bottom-left",
+                "scale-center",
+                "scale-left",
+                "scale-right",
+                "scale-bottom",
+                "scale-top",
+                "scale-top-right",
+                "scale-top-left",
+                "scale-bottom-right",
+                "scale-bottom-left",
+                "rotate-left",
+                "rotate-right",
+                "rotate-bottom",
+                "rotate-top",
+                "rotate-top-right",
+                "rotate-top-left",
+                "rotate-bottom-right",
+                "rotate-bottom-left",
+                "flip-left",
+                "flip-right",
+                "flip-bottom",
+                "flip-top",
+                "flip-top-right",
+                "flip-top-left",
+                "flip-bottom-right",
+                "flip-bottom-left"
+            ].map((variant) => (
+              <div className="relative flex flex-col items-start justify-start">
+                <p className="my-4 font-bold">
+                  {variant
+                    .split("-")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ")}{" "}
+                  Variant
+                </p>
+                <ZyfloAOS
+                  once={false}
+                  key={variant}
+                  amount={0.4}
+                  duration={0.4}
+                  easing="ease-in-out"
+                  variant={variant}
+                >
+                  <div className="flex size-52 items-center justify-center rounded-2xl border-2 border-primary/20 bg-secondary/50 shadow-[0_0_20px_0] shadow-primary/5 zyflo-transition hover:border-primary/40 hover:shadow-[0_0_40px_0] hover:shadow-primary/20">
+                    <p className="font-bold">Content goes here</p>
+                  </div>
+                </ZyfloAOS>
+              </div>
+            ))}
+          </div>
+    </ZyfloWindowMockup>
+  </TabsContent>
+  
+  <TabsContent value="code">
+    <ComponentSource>
+```tsx showLineNumbers wrapLines
+import ZyfloAOS from "@/components/zyflo/aos"
+ <div className="relative flex flex-row flex-wrap items-start justify-start gap-8">
+    {[
+        "fade",
+        "slide-left",
+        "slide-right",
+        "slide-top",
+        "slide-bottom",
+        "slide-top-right",
+        "slide-top-left",
+        "slide-bottom-right",
+        "slide-bottom-left",
+        "scale-center",
+        "scale-left",
+        "scale-right",
+        "scale-bottom",
+        "scale-top",
+        "scale-top-right",
+        "scale-top-left",
+        "scale-bottom-right",
+        "scale-bottom-left",
+        "rotate-left",
+        "rotate-right",
+        "rotate-bottom",
+        "rotate-top",
+        "rotate-top-right",
+        "rotate-top-left",
+        "rotate-bottom-right",
+        "rotate-bottom-left",
+        "flip-left",
+        "flip-right",
+        "flip-bottom",
+        "flip-top",
+        "flip-top-right",
+        "flip-top-left",
+        "flip-bottom-right",
+        "flip-bottom-left"
+    ].map((variant) => (
+        <div className="relative flex flex-col items-start justify-start">
+            <p className="my-4 font-bold">
+                {variant
+                .split("-")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ")}{" "}
+                Variant
+            </p>
+            <ZyfloAOS
+                once={false} // set to true if you want the animation to only trigger once
+                key={variant}
+                amount={0.4} // adjust as needed
+                duration={1.2} // adjust as needed
+                easing="ease-in-out" // chose any easing from the available easings
+                variant={variant}
+            >
+                <div className="flex size-52 items-center justify-center rounded-2xl">
+                    <p className="font-bold">Content goes here</p>
+                </div>
+            </ZyfloAOS>
+        </div>
+    ))}
+</div>
+```
+</ComponentSource>
+  </TabsContent>
+</Tabs>
+
+
+## Props
+
+### Quick Props View
+
+The ZyfloAOS component accepts the following props:
+
+<Table>
+  <TableCaption>ZyfloAOS Component Props</TableCaption>
+  <TableHeader>
+    <TableRow className="border-foreground/50 border-b font-bold text-foreground">
+      <TableHead className="md:w-[19%] w-[35%]">Prop</TableHead>
+      <TableHead className="w-[25%] md:block hidden">Type</TableHead>
+      <TableHead className="w-[15%] lg:block hidden">Default</TableHead>
+      <TableHead className="lg:w-[41%] md:w-[56%] w-[65%]">Description</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">children</TableCell>
+      <TableCell className="w-[25%] md:block hidden">ReactNode</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">-</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The content to be animated</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">variant</TableCell>
+      <TableCell className="w-[25%] md:block hidden">ZyfloAOSVariant</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"fade"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The animation variant to use</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">duration</TableCell>
+      <TableCell className="w-[25%] md:block hidden">number</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">0.5</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The duration of the animation in seconds</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">easing</TableCell>
+      <TableCell className="w-[25%] md:block hidden">ZyfloAOSEasing</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">"ease-in-out"</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The easing function to use for the animation</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">amount</TableCell>
+      <TableCell className="w-[25%] md:block hidden">number</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">0</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The amount of the element that needs to be visible to trigger the animation</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">once</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">false</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Whether the animation should only trigger once</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+
+### Detailed Props View
+
+#### <code>children</code>
+
+The `children` prop is the content to be animated. It accepts a ReactNode.
+
+#### <code>variant</code>
+
+The `variant` prop is the animation variant to use. It accepts a string and can be any of the following:
+
+- `fade`
+- `slide-left`
+- `slide-right`
+- `slide-top`
+- `slide-bottom`
+- `slide-top-right`
+- `slide-top-left`
+- `slide-bottom-right`
+- `slide-bottom-left`
+- `scale-center`
+- `scale-left`
+- `scale-right`
+- `scale-bottom`
+- `scale-top`
+- `scale-top-right`
+- `scale-top-left`
+- `scale-bottom-right`
+- `scale-bottom-left`
+- `rotate-left`
+- `rotate-right`
+- `rotate-bottom`
+- `rotate-top`
+- `rotate-top-right`
+- `rotate-top-left`
+- `rotate-bottom-right`
+- `rotate-bottom-left`
+- `flip-left`
+- `flip-right`
+- `flip-bottom`
+- `flip-top`
+- `flip-top-right`
+- `flip-top-left`
+- `flip-bottom-right`
+- `flip-bottom-left`
+
+#### <code>duration</code>
+
+The `duration` prop is the duration of the animation in seconds. It accepts a number.
+
+#### <code>easing</code>
+
+The `easing` prop is the easing function to use for the animation. It accepts a string and can be any of the following:
+
+- `ease-in`
+- `ease-out`
+- `ease-in-out`
+- `circ-out`
+- `spring`
+
+#### <code>amount</code>
+
+The `amount` prop is the amount of the element that needs to be visible to trigger the animation. It accepts a number.
+
+#### <code>once</code>
+
+The `once` prop is whether the animation should only trigger once. It accepts a boolean.
+
+#### <code>className</code>
+
+The `className` prop is the class name to be applied to the animated element. It accepts a string.
+
+## Customization
+
+The component uses Framer Motion for animations. You can customize its behavior by modifying the props or extending the component in your project.
+
+## Accessibility
+
+When using animations, consider the following accessibility guidelines:
+
+- Use animations sparingly to avoid overwhelming users or causing motion sickness.
+- Provide a way for users to disable animations if needed.
+- Ensure that important content is still accessible even if animations are disabled.
+
+## Notes
+
+- The component uses Framer Motion for animations. Make sure you have Framer Motion installed in your project.
+- Performance may be affected if you use too many animated elements on a single page.
+
+## Contributing
+
+If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request on our GitHub repository. We appreciate your contributions and are always open to collaboration.
+
+Thank you for considering contributing to Zyflo!
+

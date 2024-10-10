@@ -1,0 +1,217 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Light mode (default) styles */
+  .code-styles {
+    @apply hyphens-none whitespace-pre bg-none text-left font-['Consolas',_Monaco,_'Andale_Mono',_'Ubuntu_Mono',_monospace] text-[1em] leading-[1.5] text-[#24292e];
+  }
+
+  pre[class*="language-"] {
+    @apply my-[0.5em] overflow-auto p-[1em];
+  }
+
+  :not(pre) > code[class*="language-"],
+  pre[class*="language-"] {
+    @apply !bg-transparent bg-gradient-to-r from-[hsl(var(--primary)/_0.02)] to-[hsl(var(--primary)/_0.05)];
+  }
+
+  :not(pre) > code[class*="language-"] {
+    @apply whitespace-normal rounded-[0.3em] p-[0.1em];
+  }
+
+  .token-styles {
+    &.comment,
+    &.block-comment,
+    &.prolog,
+    &.doctype,
+    &.cdata {
+      @apply text-[#6a737d];
+    }
+
+    &.punctuation {
+      @apply text-[#24292e];
+    }
+
+    &.tag,
+    &.attr-name,
+    &.namespace,
+    &.number,
+    &.unit,
+    &.hexcode,
+    &.deleted {
+      @apply text-[#22863a];
+    }
+
+    &.property,
+    &.selector {
+      @apply text-[#6f42c1];
+    }
+
+    &.function-name {
+      @apply text-[#6f42c1];
+    }
+
+    &.boolean,
+    &.selector .id,
+    &.function {
+      @apply text-[#005cc5];
+    }
+
+    &.class-name {
+      @apply text-[#6f42c1];
+    }
+
+    &.constant,
+    &.symbol {
+      @apply text-[#005cc5];
+    }
+
+    &.important,
+    &.atrule,
+    &.keyword,
+    &.selector .class,
+    &.builtin {
+      @apply text-[#d73a49];
+    }
+
+    &.string,
+    &.char,
+    &.attr-value,
+    &.regex,
+    &.variable {
+      @apply text-[#032f62];
+    }
+
+    &.operator,
+    &.entity,
+    &.url {
+      @apply text-[#d73a49];
+    }
+
+    &.important,
+    &.bold {
+      @apply font-bold;
+    }
+
+    &.italic {
+      font-style: italic;
+    }
+
+    &.entity {
+      @apply cursor-help;
+    }
+
+    &.inserted {
+      @apply text-green-600;
+    }
+  }
+
+  /* Dark mode styles */
+  .dark {
+    .code-styles {
+      @apply hyphens-none whitespace-pre bg-none text-left font-['Consolas',_Monaco,_'Andale_Mono',_'Ubuntu_Mono',_monospace] text-[1em] leading-[1.5] text-[#f92aad] [text-shadow:0_0_2px_#100c0f,_0_0_5px_#dc078e33,_0_0_10px_#fff3];
+    }
+
+    pre[class*="language-"] {
+      @apply my-[0.5em] overflow-auto p-[1em];
+    }
+
+    :not(pre) > code[class*="language-"],
+    pre[class*="language-"] {
+      @apply !bg-transparent bg-gradient-to-r from-[hsl(var(--primary)/_0.02)] to-[hsl(var(--primary)/_0.1)];
+    }
+
+    :not(pre) > code[class*="language-"] {
+      @apply whitespace-normal rounded-[0.3em] p-[0.1em];
+    }
+
+    .token-styles {
+      &.comment,
+      &.block-comment,
+      &.prolog,
+      &.doctype,
+      &.cdata {
+        @apply text-[#8e8e8e];
+      }
+
+      &.punctuation {
+        @apply text-[#ccc];
+      }
+
+      &.tag,
+      &.attr-name,
+      &.namespace,
+      &.number,
+      &.unit,
+      &.hexcode,
+      &.deleted {
+        @apply text-[#e2777a];
+      }
+
+      &.property,
+      &.selector {
+        @apply text-[#72f1b8] [text-shadow:0_0_2px_#110e14,_0_0_10px_#288a5e75,_0_0_35px_#21282575];
+      }
+
+      &.function-name {
+        @apply text-[#6196cc];
+      }
+
+      &.boolean,
+      &.selector .id,
+      &.function {
+        @apply text-[#fdfdfd] [text-shadow:0_0_2px_#001c1a,_0_0_3px_#03edf975,_0_0_5px_#03edf975,_0_0_8px_#03edf975];
+      }
+
+      &.class-name {
+        @apply text-[#fff5f6] [text-shadow:0_0_2px_#000,_0_0_10px_#fc1f2c75,_0_0_5px_#fc1f2c75,_0_0_25px_#fc1f2c75];
+      }
+
+      &.constant,
+      &.symbol {
+        @apply text-[#f92aad] [text-shadow:0_0_2px_#100c0f,_0_0_5px_#dc078e33,_0_0_10px_#fff3];
+      }
+
+      &.important,
+      &.atrule,
+      &.keyword,
+      &.selector .class,
+      &.builtin {
+        @apply text-[#f4eee4] [text-shadow:0_0_2px_#232226,_0_0_8px_#1705d875,_0_0_2px_#1705d875];
+      }
+
+      &.string,
+      &.char,
+      &.attr-value,
+      &.regex,
+      &.variable {
+        @apply text-[#f87c32];
+      }
+
+      &.operator,
+      &.entity,
+      &.url {
+        @apply text-[#67cdcc];
+      }
+
+      &.important,
+      &.bold {
+        @apply font-bold;
+      }
+
+      &.italic {
+        font-style: italic;
+      }
+
+      &.entity {
+        @apply cursor-help;
+      }
+
+      &.inserted {
+        @apply text-green-500;
+      }
+    }
+  }
+}

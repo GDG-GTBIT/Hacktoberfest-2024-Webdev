@@ -1,0 +1,665 @@
+---
+title: Navbar
+description: A responsive and customizable navigation bar component with optional animations, logo, and mobile drawer support.
+---
+
+## Introduction
+
+The <code>ZyfloNavbar</code> component is a versatile and responsive navigation bar that can be easily integrated into your Next.js project. It offers a range of customization options, including logo display, navigation items, animations, and mobile drawer support.
+
+## Add The Component
+
+Add the following component to your project in the <code>/components/zyflo</code> directory:
+
+<ComponentSource>
+```tsx showLineNumbers wrap
+"use client"
+import Link from "next/link"
+import React from "react"
+import { buttonVariants } from "../ui/button"
+import {
+  ZyfloDrawer,
+  ZyfloDrawerTrigger,
+  ZyfloDrawerContent,
+  ZyfloDrawerHeader,
+  ZyfloDrawerDescription
+} from "@/components/zyflo/drawer"
+import { RxHamburgerMenu } from "react-icons/rx"
+import { cn } from "@/lib/utils"
+import {
+  zyfloBlurInFromBottomVariants,
+  zyfloBlurInFromLeftVariants,
+  zyfloBlurInFromRightVariants
+} from "@/zyflo.config"
+import { motion, Variants } from "framer-motion"
+
+interface ZyfloNavbarItem {
+  title: string
+  href: string
+  label?: string
+  icon?: React.ReactNode
+}
+
+type ZyfloNavbarLogoComponent =
+  | { src: string; alt: string; width: number; height: number }
+  | { text: string; as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6" }
+
+interface ZyfloNavbarProps extends React.ComponentPropsWithRef<"header"> {
+  items: ZyfloNavbarItem[]
+  srOnly?: boolean
+  mobileNavFooter?: React.ReactNode
+  logo?: ZyfloNavbarLogoComponent
+  disableAnimations?: boolean
+  mobileNavbarCentered?: boolean
+  sticky?: boolean
+}
+
+export default function ZyfloNavbar({
+  logo,
+  items,
+  srOnly = false,
+  mobileNavFooter = null,
+  disableAnimations = false,
+  mobileNavbarCentered = false,
+  sticky = true,
+  className,
+  ...props
+}: ZyfloNavbarProps) {
+  const justify = !logo ? "center" : "between"
+  const headingAs = logo && "text" in logo ? logo.as ?? "h1" : undefined
+  const imageClassName = "h-12 w-auto select-none"
+
+  const renderLogo = (isMobile = false) => {
+    if (!logo) return null
+    const content =
+      "src" in logo ? (
+        <div
+          className={`flex w-full justify-${
+            isMobile && mobileNavbarCentered ? "center" : "start"
+          }`}
+        >
+          <img
+            draggable={false}
+            src={logo.src}
+            alt={logo.alt}
+            width={300}
+            height={100}
+            className={cn(imageClassName, "select-none zyflo-transition")}
+          />
+        </div>
+      ) : (
+        React.createElement(
+          headingAs ?? "h3",
+          {
+            className:
+              isMobile && mobileNavbarCentered
+                ? "text-center w-full"
+                : undefined
+          },
+          logo.text
+        )
+      )
+
+    return disableAnimations ? (
+      content
+    ) : (
+      <motion.div
+        variants={zyfloBlurInFromLeftVariants as unknown as Variants}
+        initial="initial"
+        custom={0}
+        whileInView="animate"
+        viewport={{ once: true }}
+        className={`w-fit ${isMobile && mobileNavbarCentered ? "w-full" : ""}`}
+      >
+        {content}
+      </motion.div>
+    )
+  }
+
+  const renderNavItems = (isMobile = false) => {
+    const itemClass = isMobile
+      ? `w-fit text-foreground/80 zyflo-transition hover:text-primary text-${
+          mobileNavbarCentered ? "center" : "left"
+        }`
+      : "w-full text-base tracking-tight"
+    const listClass = isMobile
+      ? `flex list-none flex-col gap-2 justify-${
+          mobileNavbarCentered ? "center" : "start"
+        } items-${mobileNavbarCentered ? "center" : "start"}`
+      : "flex list-none flex-row gap-6 !my-0"
+
+    return (
+      <ul className={listClass}>
+        {items.map((item, index) => {
+          const linkContent = (
+            <Link
+              key={index}
+              href={item.href}
+              className={
+                isMobile
+                  ? "inline-flex w-fit items-center gap-2"
+                  : "inline-flex items-center gap-2 text-base"
+              }
+              aria-label={item.label ?? item.title}
+            >
+              {item.icon}
+              {item.title}
+              {srOnly && <span className="sr-only">{item.label}</span>}
+            </Link>
+          )
+
+          return disableAnimations ? (
+            <li key={item.title + index} className={itemClass}>
+              {linkContent}
+            </li>
+          ) : (
+            <motion.li
+              key={item.title + index}
+              variants={
+                isMobile
+                  ? (zyfloBlurInFromLeftVariants as unknown as Variants)
+                  : (zyfloBlurInFromBottomVariants as unknown as Variants)
+              }
+              initial="initial"
+              custom={index}
+              whileInView="animate"
+              viewport={{ once: true }}
+              className={itemClass}
+            >
+              {linkContent}
+            </motion.li>
+          )
+        })}
+      </ul>
+    )
+  }
+
+  return (
+    <header
+      className={cn(
+        `${
+          sticky ? "sticky top-0" : "relative"
+        } z-50 flex items-center justify-${justify} border-b border-b-muted bg-background/90 px-4 py-5 backdrop-blur lg:px-8`,
+        className
+      )}
+      {...props}
+    >
+      <div className="mx-auto w-full max-w-7xl">
+        <div className="flex w-full items-center justify-between space-x-16">
+          {renderLogo()}
+          <nav className="hidden lg:flex">{renderNavItems()}</nav>
+        </div>
+      </div>
+
+      <ZyfloDrawer direction="top">
+        <ZyfloDrawerTrigger className="block lg:hidden" asChild={true}>
+          {!disableAnimations ? (
+            <motion.div
+              variants={zyfloBlurInFromRightVariants as unknown as Variants}
+              initial="initial"
+              custom={0}
+              whileInView="animate"
+              viewport={{ once: true }}
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "icon" }),
+                "flex cursor-pointer"
+              )}
+            >
+              <RxHamburgerMenu className="size-5" />
+            </motion.div>
+          ) : (
+            <RxHamburgerMenu className="size-5" />
+          )}
+        </ZyfloDrawerTrigger>
+        <ZyfloDrawerContent>
+          <ZyfloDrawerHeader
+            className={`mt-4 !text-${mobileNavbarCentered ? "center" : "left"}`}
+          >
+            {renderLogo(true)}
+          </ZyfloDrawerHeader>
+          <ZyfloDrawerDescription className="p-4">
+            <nav>{renderNavItems(true)}</nav>
+            {mobileNavFooter && (
+              <footer
+                className={`mt-8 justify-${
+                  mobileNavbarCentered ? "center" : "start"
+                } flex w-full`}
+              >
+                {!disableAnimations ? (
+                  <motion.div
+                    variants={{
+                      initial: { opacity: 0, x: -45 },
+                      animate: { opacity: 1, x: 0 }
+                    }}
+                    initial="initial"
+                    whileInView="animate"
+                    viewport={{ once: true }}
+                    transition={{ delay: items.length * 0.3, duration: 0.4 }}
+                    className="w-fit"
+                  >
+                    {mobileNavFooter}
+                  </motion.div>
+                ) : (
+                  mobileNavFooter
+                )}
+              </footer>
+            )}
+          </ZyfloDrawerDescription>
+        </ZyfloDrawerContent>
+      </ZyfloDrawer>
+    </header>
+  )
+}
+```
+</ComponentSource>
+
+## Usage
+Here's a basic example of how to use the Navbar component:
+
+```tsx showLineNumbers wrap
+import ZyfloNavbar as Navbar from "@/components/zyflo/navbar"
+
+const navItems = [
+    { title: "Home", href: "/" },
+    { title: "About", href: "/about" },
+    { title: "Contact", href: "/contact" },
+]
+
+export default function MyPage() {
+    return (
+        <Navbar
+            items={navItems}
+            logo={{ text: "My Website" }}
+        />
+    )
+}
+```
+
+
+## Examples
+
+Here are some examples of how to use the <code>ZyfloNavbar</code> component:
+
+#### With Image Logo
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-8 py-2 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-8 py-2 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+  <ZyfloWindowMockup className="!p-0 h-full">
+    <div className="relative w-full">
+      <ZyfloNavbar
+        items={[
+          { title: "Home", href: "/" },
+          { title: "Products", href: "/products" },
+          { title: "About", href: "/about" },
+        ]}
+        logo={{
+          src: "/images/logos/normal-zyflo-logo-transparent.svg",
+          alt: "Company Logo",
+          width: 150,
+          height: 50,
+        }}
+        backdropBlur={false}
+        className="bg-primary/[0.03] absolute top-0 w-full z-0"
+      />
+    </div>
+      <ZyfloWindowMockupPlaceholder/>
+  </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">   
+```tsx showLineNumbers wrap
+<ZyfloNavbar
+  items={[
+    { title: "Home", href: "/" },
+    { title: "Products", href: "/products" },
+    { title: "About", href: "/about" },
+  ]}
+  logo={{
+    src: "/logo.png",
+    alt: "Company Logo",
+    width: 150,
+    height: 50,
+  }}
+/>
+```
+  </TabsContent>
+</Tabs>
+
+#### With Text Logo and Custom Heading
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-8 py-2 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-8 py-2 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+  <ZyfloWindowMockup className="!p-0 h-full">
+    <div className="relative w-full">
+      <ZyfloNavbar
+        items={[
+          { title: "Services", href: "/services" },
+          { title: "Portfolio", href: "/portfolio" },
+          { title: "Contact", href: "/contact" },
+        ]}
+        logo={{
+          text: "My Brand",
+          as: "h5",
+        }}
+        backdropBlur={false}
+        className="bg-primary/[0.03] absolute top-0 w-full z-0"
+      />
+    </div>
+      <ZyfloWindowMockupPlaceholder/>
+  </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+  ```tsx showLineNumbers wrap
+  <ZyfloNavbar
+    items={[
+      { title: "Services", href: "/services" },
+      { title: "Portfolio", href: "/portfolio" },
+      { title: "Contact", href: "/contact" },
+    ]}
+    logo={{
+      text: "My Brand",
+      as: "h5",
+    }}
+  />    
+  ```
+  </TabsContent>
+</Tabs>
+
+#### With Icons in Navigation Items
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-8 py-2 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-8 py-2 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+  <ZyfloWindowMockup className="!p-0 h-full">
+    <div className="relative w-full">
+      <ZyfloNavbar
+        items={[
+            { title: "Home", href: "/", icon: <FaHome /> },
+            { title: "About", href: "/about", icon: <FaInfoCircle /> },
+            { title: "Contact", href: "/contact", icon: <FaEnvelope /> },
+        ]}
+        logo={{ text: "Icon Nav", as: "h5" }}
+        backdropBlur={false}
+        className="bg-primary/[0.03] absolute top-0 w-full z-0"
+      />
+      <ZyfloWindowMockupPlaceholder/>
+    </div>
+  </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+  ```tsx showLineNumbers wrap
+  import { FaHome, FaInfoCircle, FaEnvelope } from "react-icons/fa"
+  // ...
+  <ZyfloNavbar
+    items={[
+        { title: "Home", href: "/", icon: <FaHome /> },
+        { title: "About", href: "/about", icon: <FaInfoCircle /> },
+        { title: "Contact", href: "/contact", icon: <FaEnvelope /> },
+    ]}
+    logo={{ text: "Icon Nav", as: "h5" }}
+  />
+  ```
+  </TabsContent>
+</Tabs>
+
+#### With Mobile Navigation Footer
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-8 py-2 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-8 py-2 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+  <ZyfloWindowMockup className="!p-0 h-full">
+    <div className="relative w-full">
+      <ZyfloNavbar
+        items={[
+          { title: "Dashboard", href: "/dashboard" },
+          { title: "Settings", href: "/settings" },
+        ]}
+        logo={{ text: "Admin Panel", as: "h5" }}
+        backdropBlur={false}
+        className="bg-primary/[0.03] absolute top-0 w-full z-0"
+        mobileNavFooter={
+          <Button>Logout</Button>
+        }
+      />
+    </div>
+      <ZyfloWindowMockupPlaceholder/>
+  </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+  ```tsx showLineNumbers wrap
+  import { Button } from "@/components/ui/button"
+  // ...  
+  <ZyfloNavbar
+    items={[
+        { title: "Dashboard", href: "/dashboard" },
+        { title: "Settings", href: "/settings" },
+    ]}
+    logo={{ text: "Admin Panel" }}
+    mobileNavFooter={
+      <Button>Logout</Button>
+    }
+  />
+  ```
+  </TabsContent>
+</Tabs>
+
+#### Centered Mobile Navigation
+
+<Tabs defaultValue="preview" className="w-full mb-4">
+  <TabsList className="mb-1">
+    <TabsTrigger className="px-8 py-2 inline-flex gap-2" value="preview"><Icons.preview className="size-4"/>Preview</TabsTrigger>
+    <TabsTrigger className="px-8 py-2 inline-flex gap-2" value="code"><Icons.code className="size-4"/>Code</TabsTrigger>
+  </TabsList>
+  <TabsContent value="preview">
+  <ZyfloWindowMockup className="!p-0 h-full">
+    <div className="relative w-full">
+      <ZyfloNavbar
+        items={[
+          { title: "Shop", href: "/shop" },
+          { title: "Cart", href: "/cart" },
+          { title: "Account", href: "/account" },
+        ]}
+        logo={{ text: "E-Commerce", as: "h5" }}
+        backdropBlur={false}
+        className="bg-primary/[0.03] absolute top-0 w-full z-0"
+        mobileNavbarCentered={true}
+      />
+    </div>
+      <ZyfloWindowMockupPlaceholder/>
+  </ZyfloWindowMockup>
+  </TabsContent>
+  <TabsContent value="code">
+  ```tsx showLineNumbers wrap
+  <ZyfloNavbar
+    items={[
+      { title: "Shop", href: "/shop" },
+      { title: "Cart", href: "/cart" },
+      { title: "Account", href: "/account" },
+    ]}
+    logo={{ text: "E-Commerce", as: "h5" }}
+    backdropBlur={false}
+    className="bg-primary/[0.03] absolute top-0 w-full z-0"
+    mobileNavbarCentered={true}
+  />
+  ```
+  </TabsContent>
+</Tabs>
+
+## Props
+
+The <code>ZyfloNavbar</code> component accepts the following props:
+
+### Quick Props Overview
+
+<Table>
+  <TableCaption>ZyfloNavbar Component Props</TableCaption>
+  <TableHeader>
+    <TableRow className="border-foreground/50 border-b font-bold text-foreground">
+      <TableHead className="md:w-[19%] w-[35%]">Prop</TableHead>
+      <TableHead className="w-[25%] md:block hidden">Type</TableHead>
+      <TableHead className="w-[15%] lg:block hidden">Default</TableHead>
+      <TableHead className="lg:w-[41%] md:w-[56%] w-[65%]">Description</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">items</TableCell>
+      <TableCell className="w-[25%] md:block hidden">ZyfloNavbarItem[]</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">-</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">An array of navigation items to be displayed in the navbar</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">logo</TableCell>
+      <TableCell className="w-[25%] md:block hidden">ZyfloNavbarLogoComponent</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">The logo to be displayed in the navbar</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">srOnly</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">false</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">If true, adds screen reader-only labels to navigation items</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">mobileNavFooter</TableCell>
+      <TableCell className="w-[25%] md:block hidden">React.ReactNode</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">null</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Additional content to be displayed at the bottom of the mobile navigation drawer</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">disableAnimations</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">false</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">If true, disables all animations in the navbar</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">mobileNavbarCentered</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">false</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">If true, centers the content in the mobile navigation drawer</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">sticky</TableCell>
+      <TableCell className="w-[25%] md:block hidden">boolean</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">true</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">If true, makes the navbar sticky at the top of the page</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell className="md:w-[19%] w-[35%]">className</TableCell>
+      <TableCell className="w-[25%] md:block hidden">string</TableCell>
+      <TableCell className="w-[15%] lg:block hidden">undefined</TableCell>
+      <TableCell className="lg:w-[41%] md:w-[56%] w-[65%]">Additional CSS classes to be applied to the navbar</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+### Detailed Props Overview
+
+#### <code>items</code> 
+
+- Type: <code>ZyfloNavbarItem[]</code>
+- Required: Yes
+
+An array of navigation items to be displayed in the navbar. Each item should have the following structure:
+
+```tsx
+interface ZyfloNavbarItem {
+  title: string
+  href: string
+  label?: string
+  icon?: React.ReactNode
+}
+```
+
+#### <code>logo</code>
+
+The logo to be displayed in the navbar
+
+- Type: <code>ZyfloNavbarLogoComponent</code>
+- Required: No
+
+It can be either an image or text:
+
+```tsx
+type ZyfloNavbarLogoComponent =
+  | { src: string; alt: string; width: number; height: number }
+  | { text: string; as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6" }
+```
+
+#### <code>srOnly</code>
+
+- Type: `boolean`
+- Default: `false`
+
+If set to true, adds screen reader-only labels to navigation items.
+
+#### <code>mobileNavFooter</code>
+
+- Type: `React.ReactNode`
+- Default: `null`
+
+Additional content to be displayed at the bottom of the mobile navigation drawer.
+
+#### <code>disableAnimations</code>
+
+- Type: `boolean`
+- Default: `false`
+
+If set to true, disables all animations in the navbar.
+
+#### <code>mobileNavbarCentered</code>
+
+- Type: `boolean`
+- Default: `false`
+
+If set to true, centers the content in the mobile navigation drawer.
+
+#### <code>sticky</code>
+
+- Type: `boolean`
+- Default: `true`
+
+If set to true, makes the navbar sticky at the top of the page.
+
+#### <code>className</code>
+
+- Type: `string`
+- Required: No
+
+Additional CSS classes to be applied to the navbar container.
+
+
+## Customization
+
+The component uses Tailwind CSS classes for styling. You can customize its appearance by modifying the CSS classes in the component's source code or by passing additional classes through the className prop.
+
+## Accessibility
+
+The component is designed with accessibility in mind:
+
+- It uses semantic HTML elements (header, nav, ul, li) for proper structure.
+- The mobile navigation drawer is implemented using the shadcnUI Drawer component, which handles proper focus management and keyboard navigation.
+- The <code>srOnly</code> prop can be used to add screen reader-only labels to navigation items for improved clarity.
+
+## Notes
+
+- The component uses Framer Motion for animations. Make sure you have Framer Motion installed in your project if you plan to use animations.
+- The mobile navigation drawer is implemented using the shadcnUI Drawer component. Ensure that this component is available in your project.
+
+## Contributing
+
+If you find any issues or have any sort of feedback or suggestions for improvements, please feel free to open an issue or submit a pull request on our <a href="https://github.com/harjjotsinghh/Zyflo" target="_blank">GitHub repository</a>. We appreciate your contributions and are always open to collaboration.
+
+Thank you for considering contributing to Zyflo!
