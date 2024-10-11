@@ -1,0 +1,136 @@
+name: Fetchpix CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
+
+env:
+  DOCKER_HOST: tcp://localhost:2375/
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ''
+
+jobs:
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker:20-dind
+        options: --privileged
+        ports:
+          - 2375:2375
+        env:
+          DOCKER_TLS_CERTDIR: ''
+          DOCKER_DRIVER: overlay2
+          DOCKER_HOST: tcp://0.0.0.0:2375
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: image=moby/buildkit:master
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Verify Docker and Docker-compose
+        run: |
+          docker version
+          docker-compose version
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '21'
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun run test
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/fetchpix:latest
+
+  deploy:
+    name: Deploy to Staging and Production
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: image=moby/buildkit:master
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Verify Docker and Docker-compose
+        run: |
+          docker version
+          docker-compose version
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Set up Docker and Docker-compose
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: image=moby/buildkit:master
+
+      - name: Build and push Docker image
+        run: |
+          docker-compose up -d --build
+          docker push ${{ secrets.DOCKER_USERNAME }}/fetchpix:latest
+          echo "Image built successfully"
+          echo "Docker images:"
+          docker images
+
+      - name: Deploy to Staging
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          echo "Deploying to staging..."
+          docker-compose up --build -d
+
+      - name: Deploy to Production
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo "Deploying to production..."
+          docker-compose up --build -d
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Rolling back to previous version..."
+          docker-compose down
+          docker-compose up --build -d

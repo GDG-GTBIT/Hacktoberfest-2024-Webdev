@@ -1,0 +1,5 @@
+xpack.security.enabled: false
+xpack.security.transport.ssl.enabled: false
+discovery.type: single-node
+cluster.routing.allocation.enable: all
+cluster.routing.allocation.node_concurrent_recoveries: 2
