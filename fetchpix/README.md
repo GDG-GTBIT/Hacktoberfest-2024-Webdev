@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-![Header Image](https://i.ibb.co/L04qJbR/twitter-header.png)
-=======
 ![twitter header](https://github.com/user-attachments/assets/34199692-317b-428a-98b6-48dbc34c9e8a)
->>>>>>> 1eb2e7f (add: unit, integration and e2e tests)
 
 ## [![CC BY-NC 4.0][cc-by-nc-shield]][cc-by-nc]
 
