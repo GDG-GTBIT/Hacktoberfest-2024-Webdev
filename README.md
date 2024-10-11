@@ -76,7 +76,7 @@ git clone --depth 1 https://github.com/GDG-GTBIT/Hacktoberfest-2024-Webdev
 **3.** Navigate to the project directory :file_folder: .
 
 ```
-cd OneEducationalWebsiteForAll
+cd Hacktoberfest-2024-Webdev
 ```
 
 **4.** Add a reference(remote) to the original repository.
@@ -132,7 +132,7 @@ git push -u origin <your_branch_name>
 
 **14.** Click on `Create Pull Request`.
 
-**15.** Voila :exclamation: You have made a PR to the Akshima-Ghai/OneEducationalWebsiteForAll project :boom: . Sit back patiently and relax while the project maintainers review your PR. Please understand, at times the time taken to review a PR can vary from a few hours to a few days.
+**15.** Voila :exclamation: You have made a PR to the GDG-GTBIT/Hacktoberfest-2024-Webdev repository! Sit back patiently and relax while the project maintainers review your PR. Please understand, at times the time taken to review a PR can vary from a few hours to a few days.
 
 <p align="center"><img src="https://media.tenor.com/images/b562ddcfb131e962f9dfa01bd32a30d1/tenor.gif" width=30%></p>
 
