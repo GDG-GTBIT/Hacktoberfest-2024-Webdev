@@ -4,7 +4,7 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "dev-win": "cmd.exe /c \"bun run index.ts --watch --hot | pino-pretty\"",
+    "dev-win": "cmd.exe /c \\\\\\\"bun run index.ts --watch --hot | pino-pretty\\\\\\\"",
     "dev-mac": "bun run index.ts --watch --hot | pino-pretty",
     "dev": "bun run index.ts --watch --hot | pino-pretty",
     "start": "bun run index.ts --watch --hot | pino-pretty",
