@@ -1,14 +1,11 @@
+# roll-a-die
+
 # TWEET-CLONE
 
-TWEET-CLONE is a simplified Twitter clone built with Next.js, featuring basic tweet functionality.
-
+A Simple Die Rolling Game built with Next.js
 ## Features
 
-- User authentication
-- Create and post tweets
-- View timeline of tweets
-- Like and retweet functionality
-- User profiles
+- Roll a Die and get a random number between 1 and 6
 
 ## Getting Started
 
@@ -36,9 +33,8 @@ To create a production-ready build:
 ## Technologies Used
 
 - Next.js
-- React
 - Node.js
-- CSS Modules
+- Tailwind CSS
 
 ## Contributing
 
