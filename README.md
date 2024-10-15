@@ -53,6 +53,7 @@ We welcome first time contributors and open source enthusiasts. Check out our is
 <li>After this your commit will be merged into our repository.</li>
 <li>Do-Follow Code of Conduct.</li>
 <li>Happy Coding 💻</li>
+<li>Happy Contributing!</li>
 </ul>
 
 ## Contribution Guidelines 🏗
