@@ -1,35 +1,45 @@
 # roll-a-die
 
-# TWEET-CLONE
+# Overview
 
 A Simple Die Rolling Game built with Next.js
 ## Features
 
-- Roll a Die and get a random number between 1 and 6
+- Roll a die and receive a random number between 1 and 6.
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js (v14 or later)
-- npm, pnpm, bun,deno or yarn
+- Package manager: npm, pnpm, bun, deno, or yarn
 
 ### Installation
 
 1. Clone the repository:
+git clone <repository-url>
+
 
 2. Navigate to the project directory:
+cd roll-a-die
 
-2. Navigate to the project directory:
+
 ### Running the Application
 
-1. Start the development server:
-   npm run build
-2. Open your browser and visit `http://localhost:3000`
+
+1. Install dependencies:
+`npm install`
+
+2. Start the Development server:
+`npm run dev`
+
+3. Open your browser and visit https://localhost:3000 
 
 ### Building for Production
 
 To create a production-ready build:
+`npm run build`
+
 ## Technologies Used
 
 - Next.js
