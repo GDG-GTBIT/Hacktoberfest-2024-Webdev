@@ -4,86 +4,98 @@ import ExpenseItem from "./components/ExpenseItem";
 import AddExpenseItem from "./components/AddExpenseItem";
 import { Expenses } from "./Expense";
 
+// Type definition for consistency
+interface Expense {
+  id: number;
+  title: string;
+  amount: number;
+}
+
 function App() {
-  const [historyList, setHistoryList] = useState<Expenses[]>([
+  // Initialize state for history of expenses/incomes
+  const [historyList, setHistoryList] = useState<Expense[]>([
     { id: 1, title: "Car", amount: -1000 },
     { id: 2, title: "Salary", amount: 2000 },
     { id: 3, title: "Rent", amount: -500 },
   ]);
+
+  // State for total income and expenses
   const [expense, setExpense] = useState(0);
   const [income, setIncome] = useState(0);
   const [edit, setEdit] = useState(false);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [editId, seteditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
 
+  // Delete an item by filtering it out
   function deleteItem(id: number) {
     const newHistoryList = historyList.filter(
-      (item: Expenses) => item.id !== id
+      (item: Expense) => item.id !== id
     );
     setHistoryList(newHistoryList);
   }
 
+  // Add a new expense/income item
   function addExpenseItem(item: { title: string; amount: string }) {
-    historyList.sort((a: Expenses, b: Expenses) => a.id - b.id);
-    const id =
-      historyList.length === 0 ? 0 : historyList[historyList.length - 1].id;
-    const newItem = {
-      id: id + 1,
+    const id = historyList.length > 0 ? historyList[historyList.length - 1].id + 1 : 1;
+    const newItem: Expense = {
+      id,
       title: item.title,
       amount: parseInt(item.amount),
     };
-    setHistoryList((prev: Expenses[]) => [...prev, newItem]);
+    setHistoryList((prev: Expense[]) => [...prev, newItem]);
   }
 
+  // Edit an existing expense/income item
   function editExpense(id: number) {
     setEdit(true);
-    const item = historyList.find((item: Expenses) => item.id === id);
-    seteditId(id);
-    setTitle(item!.title);
-    setAmount(item!.amount.toString());
+    const item = historyList.find((item: Expense) => item.id === id);
+    if (item) {
+      setEditId(id);
+      setTitle(item.title);
+      setAmount(item.amount.toString());
+    }
   }
 
+  // Update the edited expense/income item in the list
   function editExpenseItem(item: { title: string; amount: string }) {
-    const newItem = {
+    const newItem: Expense = {
       id: editId!,
       title: item.title,
       amount: parseInt(item.amount),
     };
-    const newHistoryList = historyList.map((item: Expenses) => {
-      if (item.id === editId) {
-        return newItem;
-      }
-      return item;
+    const newHistoryList = historyList.map((item: Expense) => {
+      return item.id === editId ? newItem : item;
     });
     setHistoryList(newHistoryList);
     setEdit(false);
   }
 
+ 
   function calculateTotal() {
-    let expense = 0;
-    let income = 0;
-    historyList.forEach((item: Expenses) => {
+    let totalExpense = 0;
+    let totalIncome = 0;
+    historyList.forEach((item: Expense) => {
       if (item.amount > 0) {
-        income += item.amount;
+        totalIncome += item.amount;
       } else {
-        expense += item.amount;
+        totalExpense += item.amount;
       }
     });
-    setIncome(income);
-    setExpense(expense);
+    setIncome(totalIncome);
+    setExpense(totalExpense);
   }
 
+  // Calculate totals whenever historyList changes
   useEffect(() => {
     calculateTotal();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyList]);
 
   return (
     <>
       <h1>Expense Tracker</h1>
       <div>
-        <h3>Balance : {income + Math.abs(expense)}</h3>
+        <h3>Balance : {income + expense}</h3>
       </div>
       <div className="container">
         <div className="income">
@@ -106,19 +118,15 @@ function App() {
       />
       <div className="history">
         <h1>History</h1>
-        {historyList.map(
-          (item: { id: number; title: string; amount: number }) => {
-            return (
-              <ExpenseItem
-                key={item.id}
-                title={item.title}
-                amount={item.amount}
-                onEdit={() => editExpense(item.id)}
-                onDelete={() => deleteItem(item.id)}
-              />
-            );
-          }
-        )}
+        {historyList.map((item: Expense) => (
+          <ExpenseItem
+            key={item.id}
+            title={item.title}
+            amount={item.amount}
+            onEdit={() => editExpense(item.id)}
+            onDelete={() => deleteItem(item.id)}
+          />
+        ))}
       </div>
     </>
   );
