@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import ExpenseItem from "./components/ExpenseItem";
 import AddExpenseItem from "./components/AddExpenseItem";
-import { Expenses } from "./Expense";
+// import { Expenses } from "./Expense";
 
 // Type definition for consistency
 interface Expense {
@@ -94,42 +94,47 @@ function App() {
   return (
     <>
       <h1>Expense Tracker</h1>
-      <div>
-        <h3>Balance : {income + expense}</h3>
-      </div>
-      <div className="container">
-        <div className="income">
-          <h2>Income</h2>
-          <h3>{income}</h3>
-        </div>
-        <div className="expense">
-          <h2>Expense</h2>
-          <h3>{expense}</h3>
-        </div>
-      </div>
-      <AddExpenseItem
-        isEdit={edit}
-        title={title}
-        amount={amount}
-        setTitle={setTitle}
-        setAmount={setAmount}
-        addExpenseItem={addExpenseItem}
-        editExpenseItem={editExpenseItem}
-      />
-      <div className="history">
-        <h1>History</h1>
-        {historyList.map((item: Expense) => (
-          <ExpenseItem
-            key={item.id}
-            title={item.title}
-            amount={item.amount}
-            onEdit={() => editExpense(item.id)}
-            onDelete={() => deleteItem(item.id)}
+      <div className="main-container">
+        <div className="tracker-container">
+          <div>
+            <h3>Balance : {income + expense}</h3>
+          </div>
+          <div className="container">
+            <div className="income">
+              <h2>Income</h2>
+              <h3>{income}</h3>
+            </div>
+            <div className="expense">
+              <h2>Expense</h2>
+              <h3>{expense}</h3>
+            </div>
+          </div>
+          <AddExpenseItem
+            isEdit={edit}
+            title={title}
+            amount={amount}
+            setTitle={setTitle}
+            setAmount={setAmount}
+            addExpenseItem={addExpenseItem}
+            editExpenseItem={editExpenseItem}
           />
-        ))}
+        </div>
+        <div className="history-container">
+          <h1>History</h1>
+          {historyList.map((item: Expense) => (
+            <ExpenseItem
+              key={item.id}
+              title={item.title}
+              amount={item.amount}
+              onEdit={() => editExpense(item.id)}
+              onDelete={() => deleteItem(item.id)}
+            />
+          ))}
+        </div>
       </div>
     </>
   );
+  
 }
 
 export default App;
