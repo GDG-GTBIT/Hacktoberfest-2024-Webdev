@@ -27,9 +27,9 @@ app.innerHTML = `
     
     <section id="contact">
       <h2>Contact Me</h2>
-      <p>Email: Anonymous@example.com</p>
-      <p>LinkedIn: linkedin.com/inAnonymous</p>
-      <p>GitHub: github.com/Anonymous</p>
+      <p> <a href="Anonymous@example.com" target="_blank">Email</a> </p>
+      <p> <a href="linkedin.com/inAnonymous" target="_blank">Linked In</a></p>
+      <p><a href="github.com/Anonymous" target="_blank" >GitHub</a></p>
     </section>
   </main>
   
