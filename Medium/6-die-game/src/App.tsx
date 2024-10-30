@@ -38,14 +38,15 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-300 flex flex-col items-center justify-center p-4">
-      <h1 className="text-4xl font-bold mb-8 text-blue-800">6 Dice Game (1-10)</h1>
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <h1 className="text-5xl font-extrabold mb-10 text-blue-800 drop-shadow-lg text-center">6 Dice Game (1-10)</h1>
+      <div className="grid grid-cols-3 gap-6 mb-10">
         {diceValues.map((value, index) => {
           const DiceIcon = diceIcons[Math.min(value - 1, 5)];
           return (
-            <div key={index} className="bg-white p-4 rounded-lg shadow-md flex items-center justify-center transform hover:scale-110 transition-transform duration-200">
-              <DiceIcon size={48} className="text-blue-600" />
-              <span className="ml-2 text-2xl font-bold">{value}</span>
+            <div key={index} className="bg-gradient-to-r from-blue-50 via-white to-blue-50 p-5 rounded-xl shadow-lg flex items-center justify-center transform hover:scale-105 transition-transform duration-300"
+              style={{ boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)'}}>
+              <DiceIcon size={48} className="text-blue-600 drop-shadow-md" />
+              <span className="ml-3 text-3xl font-semibold text-gray-800">{value}</span>
             </div>
           );
         })}
