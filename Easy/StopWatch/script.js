@@ -69,5 +69,6 @@ stopButton.addEventListener('click', stopStopwatch);
 resetButton.addEventListener('click', resetStopwatch);
 lapButton.addEventListener('click', recordLap); // Add event listener for lap button
 
+// Initial button states
 stopButton.disabled = true;
 lapButton.disabled = true; // Disable lap button initially
