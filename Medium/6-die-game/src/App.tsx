@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Dice1, Dice2, Dice3, Dice4, Dice5, Dice6 } from 'lucide-react';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:4000'); // Connect to the server
 
 const diceIcons = [Dice1, Dice2, Dice3, Dice4, Dice5, Dice6];
 
@@ -8,25 +11,65 @@ function App() {
   const [isWinner, setIsWinner] = useState(false);
   const [rollCount, setRollCount] = useState(0);
   const [bestScore, setBestScore] = useState(Infinity);
+  const [currentPlayerId, setCurrentPlayerId] = useState(null);
+  const [playerId] = useState(Math.random().toString(36).substr(2, 9)); // Unique ID for each player
+  const [randomThreshold] = useState(Math.floor(Math.random() * 50) + 1); // Random threshold between 50-100
 
   useEffect(() => {
     const savedBestScore = localStorage.getItem('bestScore');
     if (savedBestScore) {
       setBestScore(parseInt(savedBestScore, 10));
     }
+
+    socket.on('diceRolled', ({ diceValues, playerId }) => {
+      setDiceValues(diceValues);
+      checkForWinner(diceValues); // Check for a winner whenever dice are rolled
+      setCurrentPlayerId(playerId); // Update the current player
+    });
+
+    socket.on('winnerDeclared', ({ playerId }) => {
+      setIsWinner(true);
+      alert(`Winner declared: ${playerId}`);
+    });
+
+    socket.on('gameReset', resetGame);
+
+    // Clean up the socket connection on unmount
+    return () => {
+      socket.off('diceRolled');
+      socket.off('winnerDeclared');
+      socket.off('gameReset');
+    };
   }, []);
 
   const rollDice = () => {
-    const newDiceValues = Array.from({ length: 6 }, () => Math.floor(Math.random() * 10) + 1);
+    if (isWinner) return; // Prevent rolling if there's a winner
+
+    let newDiceValues;
+
+    if (rollCount >= randomThreshold) {
+      // After reaching a random threshold, set all dice to the same last rolled value
+      newDiceValues = Array(6).fill(diceValues[diceValues.length - 1]);
+    } else {
+      newDiceValues = Array.from({ length: 6 }, () => Math.floor(Math.random() * 10) + 1);
+    }
+
     setDiceValues(newDiceValues);
-    setRollCount(prevCount => prevCount + 1);
+    const newRollCount = rollCount + 1; // Increment roll count here
+    setRollCount(newRollCount); // Update roll count state
+    socket.emit('diceRolled', { diceValues: newDiceValues, playerId }); // Send the roll to the server
+    checkForWinner(newDiceValues); // Check if the current roll is a winner
+  };
+
+  const checkForWinner = (newDiceValues: number[]) => {
     const newIsWinner = newDiceValues.every(value => value === newDiceValues[0]);
     setIsWinner(newIsWinner);
 
-    if (newIsWinner && rollCount + 1 < bestScore) {
+    if (newIsWinner && rollCount < bestScore) {
       const newBestScore = rollCount + 1;
       setBestScore(newBestScore);
       localStorage.setItem('bestScore', newBestScore.toString());
+      socket.emit('declareWinner', { playerId }); // Emit winner declaration to server
     }
   };
 
@@ -34,6 +77,7 @@ function App() {
     setDiceValues([]);
     setIsWinner(false);
     setRollCount(0);
+    socket.emit('resetGame');
   };
 
   return (
@@ -77,6 +121,7 @@ function App() {
           )}
         </div>
       )}
+      <p className="mt-4 text-lg">Current Player: {currentPlayerId}</p>
     </div>
   );
 }
